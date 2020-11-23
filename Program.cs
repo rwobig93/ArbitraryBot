@@ -9,11 +9,13 @@ namespace ArbitraryBot
     {
         static void Main(string[] args)
         {
+            Core.InitializeApp();
+
             Core.InitializeLogger();
 
             Handler.ParseLaunchArgs(args);
 
-            if (Config.LoadConfig() == StatusReturn.NotFound)
+            if (Config.Load() != StatusReturn.Success)
             {
                 Core.InitializeFirstRun();
             }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ArbitraryBot.BackEnd;
 using ArbitraryBot.Shared;
@@ -14,6 +15,77 @@ namespace ArbitraryBot.FrontEnd
     {
         internal static void ShowMenuRoot()
         {
+            Log.Debug("Presenting Menu Root");
+            while (!Constants.CloseApp)
+            {
+                Console.WriteLine(
+                    "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
+                    "|  Enter the corresponding menu number for the action you want to perform:  |{0}" +
+                    "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
+                    "|  1. Add Watcher                                                           |{0}" +
+                    "|  2. Update Watcher                                                        |{0}" +
+                    "|  3. Remove Watcher                                                        |{0}" +
+                    "|  4. Open Directory                                                        |{0}" +
+                    "|  5. Close Bot                                                             |{0}" +
+                    "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
+                    "{0}Option: ", Environment.NewLine);
+                var answer = Console.ReadLine();
+                Log.Debug($"Menu answer was: {answer}");
+                if (!int.TryParse(answer, out int intAnswer))
+                {
+                    Log.Debug("Menu answer entered was an invalid response");
+                    Console.WriteLine("Answer wasn't invalid, please try again");
+                    Thread.Sleep(3000);
+                }
+                else
+                {
+                    Log.Debug($"Valid menu option {intAnswer} was entered");
+                    switch (intAnswer)
+                    {
+                        case 1:
+                            ShowMenuAddWatcher();
+                            break;
+                        case 2:
+                            ShowMenuUpdateWatcher();
+                            break;
+                        case 3:
+                            ShowMenuRemoveWatcher();
+                            break;
+                        case 4:
+                            ShowMenuOpenDirectory();
+                            break;
+                        case 5:
+                            Handler.CloseApp();
+                            break;
+                        default:
+                            Log.Information("Answer entered wasn't a valid presented option");
+                            Console.WriteLine("Answer entered isn't one of the options, please try again");
+                            Thread.Sleep(3000);
+                            break;
+                    }
+                }
+                Console.Clear();
+            }
+            Log.Information("Exited menu root");
+        }
+
+        private static void ShowMenuOpenDirectory()
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void ShowMenuRemoveWatcher()
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void ShowMenuUpdateWatcher()
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void ShowMenuAddWatcher()
+        {
             throw new NotImplementedException();
         }
 
@@ -21,6 +93,7 @@ namespace ArbitraryBot.FrontEnd
         {
             Log.Debug("Displaying host info");
             Console.WriteLine(
+                $"{Environment.NewLine}" +
                 $"Hostname:                {Environment.MachineName}{Environment.NewLine}" +
                 $"Current OS Platform:     {OSDynamic.GetCurrentOS()}{Environment.NewLine}" +
                 $"Current OS Architecture: {RuntimeInformation.OSArchitecture}{Environment.NewLine}" +
@@ -30,6 +103,35 @@ namespace ArbitraryBot.FrontEnd
                 $"Logging Path:            {Constants.PathLogs}{Environment.NewLine}" +
                 $"Config Path:             {Constants.PathConfigDefault}{Environment.NewLine}");
             Log.Information("Host info Displayed");
+        }
+        internal static bool PromptYesNo(string question)
+        {
+            Log.Debug($"Asking PromptYesNo({question})");
+            bool answered = false;
+            string answer = "";
+            while (!answered)
+            {
+                Console.Write($"{question} [y/n]? ");
+                answer = Console.ReadLine().ToLower();
+                if (answer != "y" && answer != "n")
+                {
+                    Log.Debug($"Answer was invalid: {answer}");
+                    Console.WriteLine("You entered an invalid response, please try again");
+                }
+                else
+                {
+                    answered = true;
+                }
+            }
+            Log.Information($"YesNo answer was: {answer}");
+            if (answer == "y")
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

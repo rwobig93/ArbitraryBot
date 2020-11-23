@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ArbitraryBot.BackEnd;
+using ArbitraryBot.Shared;
 using Serilog;
 
 namespace ArbitraryBot.FrontEnd
@@ -12,8 +13,8 @@ namespace ArbitraryBot.FrontEnd
     {
         internal static void CatchAppClose()
         {
-            Console.WriteLine("App is closing! Press any key to close");
-            Console.ReadLine();
+            Core.SaveEverything();
+            Jobs.StopJobService();
         }
 
         internal static void ParseLaunchArgs(string[] args)
@@ -27,7 +28,22 @@ namespace ArbitraryBot.FrontEnd
                     Core.ChangeLoggingLevel(Serilog.Events.LogEventLevel.Debug);
                     Log.Debug("Launch arg was -debug, changed logging to debug");
                 }
+                if (arg.ToLower() == "-consoledebug")
+                {
+                    Core.ChangeLoggingLevelConsole(Serilog.Events.LogEventLevel.Debug);
+                    Log.Debug("Launch arg was -consoledebug, changed console logging to debug");
+                }
             }
+        }
+
+        internal static void CloseApp()
+        {
+            var answer = UI.PromptYesNo("Are you sure you want to close the bot?");
+            if (answer)
+            {
+                Constants.CloseApp = true;
+            }
+            Core.SaveEverything();
         }
     }
 }

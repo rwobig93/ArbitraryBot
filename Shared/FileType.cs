@@ -12,6 +12,7 @@ namespace ArbitraryBot.Shared
         public AppFile AppFile { get; set; }
         public string FilePrefix { get; set; }
         public string Directory { get; set; }
+        public int RetentionDays { get; set; }
 
         public static FileType GetFileType(AppFile appFile)
         {
@@ -21,22 +22,33 @@ namespace ArbitraryBot.Shared
                     return new FileType
                     {
                         AppFile = AppFile.Config,
-                        FilePrefix = "config_",
-                        Directory = Constants.PathConfigDefault
+                        FilePrefix = "Config_",
+                        Directory = Constants.PathConfigDefault,
+                        RetentionDays = 7
                     };
                 case AppFile.Log:
                     return new FileType
                     {
                         AppFile = AppFile.Log,
                         FilePrefix = OSDynamic.GetProductAssembly().ProductName,
-                        Directory = Constants.PathLogs
+                        Directory = Constants.PathLogs,
+                        RetentionDays = 30
+                    };
+                case AppFile.SavedData:
+                    return new FileType
+                    {
+                        AppFile = AppFile.SavedData,
+                        FilePrefix = "SaveData_",
+                        Directory = Constants.PathSavedData,
+                        RetentionDays = 90
                     };
                 default:
                     return new FileType
                     {
-                        AppFile = AppFile.Config,
-                        FilePrefix = "config_",
-                        Directory = Constants.PathConfigDefault
+                        AppFile = AppFile.Log,
+                        FilePrefix = OSDynamic.GetProductAssembly().ProductName,
+                        Directory = Constants.PathLogs,
+                        RetentionDays = 30
                     };
             }
         }

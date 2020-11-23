@@ -7,6 +7,8 @@ using Serilog;
 using Serilog.Core;
 using System.IO;
 using Newtonsoft.Json;
+using ArbitraryBot.BackEnd;
+using System.Runtime.InteropServices;
 
 namespace ArbitraryBot.Shared
 {
@@ -14,16 +16,15 @@ namespace ArbitraryBot.Shared
     {
         // Config goes here
 
-        public static StatusReturn LoadConfig()
+        public static StatusReturn Load()
         {
-            Log.Debug("Starting LoadConfig()");
-            string configFile = $@"{Constants.PathConfigDefault}\config.json";
+            string configFile = OSDynamic.GetFilePath(Constants.PathConfigDefault, "Config.json");
             Log.Debug($"configFile = {configFile}");
             if (File.Exists(configFile))
             {
                 Log.Debug("Attempting to load config file");
                 var configLoaded = File.ReadAllText(configFile);
-                Constants.Config = JsonConvert.DeserializeObject<Shared.Config>(configLoaded);
+                Constants.Config = JsonConvert.DeserializeObject<Config>(configLoaded);
                 Log.Information("Successfully deserialized config file");
                 return StatusReturn.Success;
             }
@@ -34,9 +35,8 @@ namespace ArbitraryBot.Shared
             }
         }
 
-        public static StatusReturn SaveConfig(string configFile = "")
+        public static StatusReturn Save(string configFile = "")
         {
-            Log.Debug("Starting SaveConfig()");
             if (!Directory.Exists(Constants.PathConfigDefault))
             {
                 Log.Debug($"Config path doesn't exist, attempting to create dir: {Constants.PathConfigDefault}");
@@ -46,12 +46,16 @@ namespace ArbitraryBot.Shared
             
             if (string.IsNullOrWhiteSpace(configFile))
             {
-                configFile = $@"{Constants.PathConfigDefault}\config.json";
+                configFile = OSDynamic.GetFilePath(Constants.PathConfigDefault, "Config.json");
             }
             else
             {
                 var split = configFile.Split('\\');
-                configFile = $@"{Constants.PathConfigDefault}\{split.Last()}";
+                if (OSDynamic.GetCurrentOS() != OSPlatform.Windows)
+                {
+                    split = configFile.Split('/');
+                }
+                configFile = OSDynamic.GetFilePath(Constants.PathConfigDefault, split.Last());
                 if (!configFile.ToLower().EndsWith(".json"))
                 {
                     configFile = configFile += ".json";
@@ -75,7 +79,7 @@ namespace ArbitraryBot.Shared
         {
             try
             {
-                string configFile = $@"{Constants.PathConfigDefault}\config.json";
+                string configFile = OSDynamic.GetFilePath(Constants.PathConfigDefault, "Config.json");
                 if (File.Exists(configFile))
                 {
                     Log.Warning($"Config file already exists, will back it up before creating a new one: {configFile}");
@@ -91,17 +95,16 @@ namespace ArbitraryBot.Shared
             }
         }
 
-        private static void Remove()
+        internal static void Remove()
         {
-            string configFile = $@"{Constants.PathConfigDefault}\config.json";
+            string configFile = OSDynamic.GetFilePath(Constants.PathConfigDefault, "Config.json");
             File.Delete(configFile);
         }
 
-        private static void Backup()
+        internal static void Backup()
         {
-            string configFile = $@"{Constants.PathConfigDefault}\config.json";
-            string backupConfigFile = $@"{Constants.PathConfigDefault}\config_{DateTime.Now.ToString("yy-MM-dd-H-mm")}.json";
-            SaveConfig(backupConfigFile);
+            string backupConfigFile = OSDynamic.GetFilePath(Constants.PathSavedData,  $"Config_{DateTime.Now.ToString("yy-MM-dd-H-mm")}.json");
+            Save(backupConfigFile);
         }
     }
 }

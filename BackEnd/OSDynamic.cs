@@ -22,7 +22,7 @@ namespace ArbitraryBot.BackEnd
                     RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
                     "LOCALAPPDATA" : "Home");
                 ProductAssembly proAss = GetProductAssembly();
-                basePath = $@"{Path.Combine(userPath, proAss.CompanyName)}\{proAss.ProductName}";
+                basePath = Path.Combine(Path.Combine(userPath, proAss.CompanyName), proAss.ProductName);
             }
             return basePath;
         }
@@ -46,6 +46,16 @@ namespace ArbitraryBot.BackEnd
         internal static string GetLoggingPath()
         {
             return Path.Combine(GetStoragePath(), "Logs");
+        }
+
+        internal static string GetSavedDataPath()
+        {
+            return Path.Combine(GetStoragePath(), "SavedData");
+        }
+
+        internal static string GetFilePath(string directory, string fileName)
+        {
+            return Path.Combine(directory, fileName);
         }
 
         public static OSPlatform GetCurrentOS()

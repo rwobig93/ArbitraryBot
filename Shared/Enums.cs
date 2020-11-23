@@ -17,6 +17,14 @@ namespace ArbitraryBot.Shared
     public enum AppFile
     {
         Config,
-        Log
+        Log,
+        SavedData
+    }
+
+    public enum Alert
+    {
+        Email,
+        Webhook,
+        Email_Webhook
     }
 }
