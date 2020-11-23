@@ -34,8 +34,8 @@ namespace ArbitraryBot.FrontEnd
                 if (!int.TryParse(answer, out int intAnswer))
                 {
                     Log.Debug("Menu answer entered was an invalid response");
-                    Console.WriteLine("Answer wasn't invalid, please try again");
-                    Thread.Sleep(3000);
+                    Console.WriteLine("Answer wasn't invalid, please press enter and try again");
+                    Console.ReadLine();
                 }
                 else
                 {
@@ -59,8 +59,8 @@ namespace ArbitraryBot.FrontEnd
                             break;
                         default:
                             Log.Information("Answer entered wasn't a valid presented option");
-                            Console.WriteLine("Answer entered isn't one of the options, please try again");
-                            Thread.Sleep(3000);
+                            Console.WriteLine("Answer entered isn't one of the options, please press enter and try again");
+                            Console.ReadLine();
                             break;
                     }
                 }
@@ -123,7 +123,7 @@ namespace ArbitraryBot.FrontEnd
                     answered = true;
                 }
             }
-            Log.Information($"YesNo answer was: {answer}");
+            Log.Information($"Prompt YesNo answer was: {answer}");
             if (answer == "y")
             {
                 return true;

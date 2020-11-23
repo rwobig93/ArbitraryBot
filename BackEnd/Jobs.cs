@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ArbitraryBot.Extensions;
 using ArbitraryBot.Shared;
@@ -13,7 +14,7 @@ namespace ArbitraryBot.BackEnd
 {
     public static class Jobs
     {
-        public static BackgroundJobServer BackgroundJobServer { private set; get; }
+        public static BackgroundJobServer BackgroundJobServer { set; get; }
         public static StatusReturn InitializeJobService()
         {
             try
@@ -61,7 +62,6 @@ namespace ArbitraryBot.BackEnd
                 StartJobCleanup();
                 //StartJobWatcherOneMin();
                 //StartJobWatcherFiveMin();
-                StartJobTestJob();
                 return StatusReturn.Success;
             }
             catch (Exception ex)
@@ -71,27 +71,22 @@ namespace ArbitraryBot.BackEnd
             }
         }
 
-        private static void StartJobTestJob()
-        {
-            RecurringJob.AddOrUpdate(() => Core.TestMethod(), CronString.Minutely());
-        }
-
-        private static void StartJobWatcherFiveMin()
+        public static void StartJobWatcherFiveMin()
         {
             throw new NotImplementedException();
         }
 
-        private static void StartJobWatcherOneMin()
+        public static void StartJobWatcherOneMin()
         {
             throw new NotImplementedException();
         }
 
-        private static void StartJobCleanup()
+        public static void StartJobCleanup()
         {
             RecurringJob.AddOrUpdate(() => Core.CleanupAllOldFiles(), CronString.Daily());
         }
 
-        private static void StartJobDataSaver()
+        public static void StartJobDataSaver()
         {
             RecurringJob.AddOrUpdate(() => Core.SaveEverything(), CronString.MinuteInterval(5));
         }

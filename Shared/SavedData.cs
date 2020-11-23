@@ -31,7 +31,7 @@ namespace ArbitraryBot.Shared
                 }
                 else
                 {
-                    Log.Information("SavedData file wasn't found");
+                    Log.Debug("SavedData file wasn't found");
                     return StatusReturn.NotFound;
                 }
             }
@@ -73,11 +73,11 @@ namespace ArbitraryBot.Shared
                 Log.Debug($"saveFile = {saveFile}");
                 if (File.Exists(saveFile))
                 {
-                    Log.Information("Attempting to save over current config file");
+                    Log.Debug("Attempting to save over save data file");
                 }
                 else
                 {
-                    Log.Information("Attempting to save a new config file");
+                    Log.Debug("Attempting to save a new save data file");
                 }
                 File.WriteAllText(saveFile, JsonConvert.SerializeObject(Constants.SavedData));
                 Log.Information("Successfully serialized savedData file");

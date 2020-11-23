@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ArbitraryBot.BackEnd;
 using ArbitraryBot.Shared;
@@ -15,6 +16,8 @@ namespace ArbitraryBot.FrontEnd
         {
             Core.SaveEverything();
             Jobs.StopJobService();
+            Log.Information("==START-STOP== Application Stopped");
+            Log.CloseAndFlush();
         }
 
         internal static void ParseLaunchArgs(string[] args)

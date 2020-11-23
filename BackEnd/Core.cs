@@ -32,10 +32,10 @@ namespace ArbitraryBot.BackEnd
                 .CreateLogger();
 
             ChangeLoggingLevel();
-            Log.Information("Logger started");
+            Log.Information("==START-STOP== Application Started");
         }
 
-        internal static void SaveEverything()
+        public static void SaveEverything()
         {
             Log.Verbose("Attempting to save all application data");
             Config.Save();
@@ -43,7 +43,7 @@ namespace ArbitraryBot.BackEnd
             Log.Debug("Saved all application data");
         }
 
-        internal static void CleanupAllOldFiles()
+        public static void CleanupAllOldFiles()
         {
             Log.Debug("Attempting to cleanup all old files");
             HouseKeeping.CleanupOldFiles(AppFile.Config);
@@ -68,16 +68,10 @@ namespace ArbitraryBot.BackEnd
             Log.Information("Finished Starting Services");
         }
 
-        internal static void TestMethod()
-        {
-            string msg = "TESTING: This should appear every min";
-            Log.Information($"LOG_{msg}");
-            Console.WriteLine($"CON_{msg}");
-        }
-
         internal static void ProcessSettingsFromConfig()
         {
             HouseKeeping.ValidateAllFilePaths();
+            CleanupAllOldFiles();
             // TODO: Put setting changes from config load
         }
 
@@ -109,7 +103,7 @@ namespace ArbitraryBot.BackEnd
             }
         }
 
-        internal static void ChangeLoggingLevelConsole(LogEventLevel logLevel)
+        internal static void ChangeLoggingLevelConsole(LogEventLevel logLevel = LogEventLevel.Error)
         {
 
             if (Constants.LogLevelConsole == null)

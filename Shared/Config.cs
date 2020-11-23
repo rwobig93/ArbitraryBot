@@ -30,7 +30,7 @@ namespace ArbitraryBot.Shared
             }
             else
             {
-                Log.Information("Config file wasn't found");
+                Log.Debug("Config file wasn't found");
                 return StatusReturn.NotFound;
             }
         }
@@ -64,11 +64,11 @@ namespace ArbitraryBot.Shared
             Log.Debug($"configFile = {configFile}");
             if (File.Exists(configFile))
             {
-                Log.Information("Attempting to save over current config file");
+                Log.Debug("Attempting to save over current config file");
             }
             else
             {
-                Log.Information("Attempting to save a new config file");
+                Log.Debug("Attempting to save a new config file");
             }
             File.WriteAllText(configFile, JsonConvert.SerializeObject(Constants.Config));
             Log.Information("Successfully serialized config file");
