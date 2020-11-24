@@ -77,5 +77,10 @@ namespace ArbitraryBot.BackEnd
                 return OSPlatform.FreeBSD;
             }
         }
+
+        internal static void OpenPath(string directory)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

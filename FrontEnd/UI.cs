@@ -71,7 +71,55 @@ namespace ArbitraryBot.FrontEnd
 
         private static void ShowMenuOpenDirectory()
         {
-            throw new NotImplementedException();
+            bool menuClose = false;
+            Log.Debug("Presenting Menu OpenDirectory");
+            while (!menuClose)
+            {
+                Console.WriteLine(
+                    "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
+                    "|  Enter the corresponding menu number for the action you want to perform:  |{0}" +
+                    "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
+                    "|  1. Open Config Directory                                                 |{0}" +
+                    "|  2. Open Log Directory                                                    |{0}" +
+                    "|  3. Open SaveData Directory                                               |{0}" +
+                    "|  4. Back to Main Menu                                                     |{0}" +
+                    "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
+                    "{0}Option: ", Environment.NewLine);
+                var answer = Console.ReadLine();
+                Log.Debug($"Menu answer was: {answer}");
+                if (!int.TryParse(answer, out int intAnswer))
+                {
+                    Log.Debug("Menu answer entered was an invalid response");
+                    Console.WriteLine("Answer wasn't invalid, please press enter and try again");
+                    Console.ReadLine();
+                }
+                else
+                {
+                    Log.Debug($"Valid menu option {intAnswer} was entered");
+                    switch (intAnswer)
+                    {
+                        case 1:
+                            Core.OpenDir(AppFile.Config);
+                            break;
+                        case 2:
+                            Core.OpenDir(AppFile.Log);
+                            break;
+                        case 3:
+                            Core.OpenDir(AppFile.SavedData);
+                            break;
+                        case 4:
+                            menuClose = true;
+                            break;
+                        default:
+                            Log.Information("Answer entered wasn't a valid presented option");
+                            Console.WriteLine("Answer entered isn't one of the options, please press enter and try again");
+                            Console.ReadLine();
+                            break;
+                    }
+                }
+                Console.Clear();
+            }
+            Log.Information("Exited Menu OpenDirectory");
         }
 
         private static void ShowMenuRemoveWatcher()

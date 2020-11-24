@@ -8,6 +8,7 @@ using Serilog.Events;
 using ArbitraryBot.Shared;
 using ArbitraryBot.Extensions;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace ArbitraryBot.BackEnd
 {
@@ -120,6 +121,20 @@ namespace ArbitraryBot.BackEnd
         internal static void InitializeApp()
         {
             HouseKeeping.ValidateAllFilePaths(true);
+        }
+
+        internal static StatusReturn OpenDir(AppFile appFile)
+        {
+            if (OSDynamic.GetCurrentOS() == OSPlatform.Windows)
+            {
+                var file = FileType.GetFileType(appFile);
+                OSDynamic.OpenPath(file.Directory);
+                return StatusReturn.Success;
+            }
+            else
+            {
+                return StatusReturn.Failure;
+            }
         }
     }
 }
