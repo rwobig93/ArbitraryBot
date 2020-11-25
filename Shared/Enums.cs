@@ -27,4 +27,10 @@ namespace ArbitraryBot.Shared
         Webhook,
         Email_Webhook
     }
+
+    public enum TrackInterval
+    {
+        OneMin,
+        FiveMin
+    }
 }

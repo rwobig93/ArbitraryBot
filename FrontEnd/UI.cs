@@ -31,7 +31,7 @@ namespace ArbitraryBot.FrontEnd
                     "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
                     "{0}Option: ", Environment.NewLine);
                 var answer = Console.ReadLine();
-                Log.Debug($"Menu answer was: {answer}");
+                Log.Debug("Menu prompt answered", answer);
                 if (!int.TryParse(answer, out int intAnswer))
                 {
                     Log.Debug("Menu answer entered was an invalid response");
@@ -40,7 +40,7 @@ namespace ArbitraryBot.FrontEnd
                 }
                 else
                 {
-                    Log.Debug($"Valid menu option {intAnswer} was entered");
+                    Log.Debug("Valid menu option was entered", intAnswer);
                     switch (intAnswer)
                     {
                         case 1:
@@ -86,7 +86,7 @@ namespace ArbitraryBot.FrontEnd
                     "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
                     "{0}Option: ", Environment.NewLine);
                 var answer = Console.ReadLine();
-                Log.Debug($"Menu answer was: {answer}");
+                Log.Debug("Menu prompt answered", answer);
                 if (!int.TryParse(answer, out int intAnswer))
                 {
                     Log.Debug("Menu answer entered was an invalid response");
@@ -95,7 +95,7 @@ namespace ArbitraryBot.FrontEnd
                 }
                 else
                 {
-                    Log.Debug($"Valid menu option {intAnswer} was entered");
+                    Log.Debug("Valid menu option was entered", intAnswer);
                     switch (intAnswer)
                     {
                         case 1:
@@ -157,6 +157,12 @@ namespace ArbitraryBot.FrontEnd
                 var pageURL = UI.PromptQuestion("Enter the page URL to monitor");
                 var keyWord = UI.PromptQuestion("Enter the keyword you want to look for (case sensitive)");
                 bool alertOnNotExist = UI.PromptYesNo("Do you want the alert to trigger when this keyword doesn't exist? (if no then alert triggers when the keyword doesn't exist)");
+                int intervalAnswer = UI.PromptMultipleChoice("Which interval would you like this tracker to check?",
+                    new string[] 
+                    {
+                        "1 Min",
+                        "5 Min"
+                    });
                 int alertAnswer = UI.PromptMultipleChoice("Which alert type would you like to use?",
                     new string[]
                     {
@@ -185,8 +191,8 @@ namespace ArbitraryBot.FrontEnd
                         newTracker.Emails.Add(email.ToString().Replace("\"", "").Trim());
                     }
                 }
-                Constants.SavedData.TrackedProducts.Add(newTracker);
-                Log.Information($"Created new tracker! [URL]{newTracker.PageURL} | [KWD]{newTracker.Keyword} | [ANE]{newTracker.AlertOnKeywordNotExist} | [SLA]{newTracker.AlertType}");
+                Handler.SelectTrackerIntervalFromChoice(intervalAnswer, newTracker);
+                Log.Information("Created new tracker!", newTracker);
                 Console.Write($"Successfully created tracker! {Environment.NewLine}URL: {newTracker.PageURL}");
                 UI.StopForMessage();
                 Console.Clear();
@@ -196,8 +202,7 @@ namespace ArbitraryBot.FrontEnd
 
         private static int PromptMultipleChoice(string question, string[] choices)
         {
-            Log.Debug($"Asking PromptMultipleChoice({question})");
-            Log.Debug($"Choices: {choices}");
+            Log.Debug("Asking PromptMultipleChoice", question, choices);
             bool answered = false;
             int retAnswer = 0;
             while (!answered)
@@ -212,13 +217,13 @@ namespace ArbitraryBot.FrontEnd
                 string answer = Console.ReadLine();
                 if (!int.TryParse(answer, out int intAnswer))
                 {
-                    Log.Debug("Menu answer entered was an invalid response");
+                    Log.Debug("Menu answer entered was an invalid response", answer);
                     Console.WriteLine("Answer wasn't invalid, please press enter and try again");
                     Console.ReadLine();
                 }
                 else if (intAnswer <= 0 || intAnswer > choices.Count())
                 {
-                    Log.Debug("Menu answer entered was an invalid response");
+                    Log.Debug("Menu answer entered was an invalid response", intAnswer);
                     Console.WriteLine("Answer wasn't invalid, please press enter and try again");
                     Console.ReadLine();
                 }
@@ -228,12 +233,12 @@ namespace ArbitraryBot.FrontEnd
                     var bAnswer = Console.ReadLine().ToLower();
                     if (bAnswer != "y" && bAnswer != "n")
                     {
-                        Log.Debug($"Answer was invalid: {answer}");
+                        Log.Debug("Answer was invalid", answer);
                         Console.WriteLine("You entered an invalid response, please try again");
                     }
                     else if (bAnswer != "n")
                     {
-                        Log.Debug($"Answer was: {answer}, asking again");
+                        Log.Debug("Answer was no, asking again", bAnswer);
                     }
                     else
                     {
@@ -242,13 +247,13 @@ namespace ArbitraryBot.FrontEnd
                     }
                 }
             }
-            Log.Information($"PromptMultipleChoice answer was: {retAnswer}");
+            Log.Information($"PromptMultipleChoice answered", retAnswer);
             return retAnswer;
         }
 
         private static string PromptQuestion(string question)
         {
-            Log.Debug($"Asking PromptQuestion({question})");
+            Log.Debug("Asking PromptQuestion", question);
             bool answered = false;
             string answer = "";
             while (!answered)
@@ -259,19 +264,19 @@ namespace ArbitraryBot.FrontEnd
                 var bAnswer = Console.ReadLine().ToLower();
                 if (bAnswer != "y" && bAnswer != "n")
                 {
-                    Log.Debug($"Answer was invalid: {answer}");
+                    Log.Debug("Answer was invalid", answer);
                     Console.WriteLine("You entered an invalid response, please try again");
                 }
                 else if (bAnswer != "n")
                 {
-                    Log.Debug($"Answer was: {answer}, asking again");
+                    Log.Debug("Answer was no, asking again", bAnswer);
                 }
                 else
                 {
                     answered = true;
                 }
             }
-            Log.Information($"PromptQuestion answer was: {answer}");
+            Log.Information("PromptQuestion answered", answer);
             return answer;
         }
 
@@ -292,7 +297,7 @@ namespace ArbitraryBot.FrontEnd
         }
         internal static bool PromptYesNo(string question)
         {
-            Log.Debug($"Asking PromptYesNo({question})");
+            Log.Debug("Asking PromptYesNo", question);
             bool answered = false;
             string answer = "";
             while (!answered)
@@ -301,7 +306,7 @@ namespace ArbitraryBot.FrontEnd
                 answer = Console.ReadLine().ToLower();
                 if (answer != "y" && answer != "n")
                 {
-                    Log.Debug($"Answer was invalid: {answer}");
+                    Log.Debug("Answer was invalid", answer);
                     Console.WriteLine("You entered an invalid response, please try again");
                 }
                 else
@@ -309,7 +314,7 @@ namespace ArbitraryBot.FrontEnd
                     answered = true;
                 }
             }
-            Log.Information($"Prompt YesNo answer was: {answer}");
+            Log.Information("Prompt YesNo answered", answer);
             if (answer == "y")
             {
                 return true;

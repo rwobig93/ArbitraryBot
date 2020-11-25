@@ -73,12 +73,12 @@ namespace ArbitraryBot.BackEnd
 
         public static void StartJobWatcherFiveMin()
         {
-            RecurringJob.AddOrUpdate(() => Watcher.StartFiveMinWatcher(), CronString.MinuteInterval(5));
+            RecurringJob.AddOrUpdate(() => Watcher.CheckOnTrackers(TrackInterval.FiveMin), CronString.MinuteInterval(5));
         }
 
         public static void StartJobWatcherOneMin()
         {
-            RecurringJob.AddOrUpdate(() => Watcher.StartOneMinWatcher(), CronString.Minutely);
+            RecurringJob.AddOrUpdate(() => Watcher.CheckOnTrackers(TrackInterval.OneMin), CronString.Minutely);
         }
 
         public static void StartJobCleanup()
