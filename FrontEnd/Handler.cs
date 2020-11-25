@@ -29,13 +29,18 @@ namespace ArbitraryBot.FrontEnd
                 
                 if (arg.ToLower() == "-debug")
                 {
-                    Core.ChangeLoggingLevel(Serilog.Events.LogEventLevel.Debug);
-                    Log.Debug("Launch arg was -debug, changed logging to debug");
+                    Core.ChangeLoggingLevelLocal(Serilog.Events.LogEventLevel.Debug);
+                    Log.Debug("Launch arg was -debug, changed local logging to debug");
                 }
-                if (arg.ToLower() == "-consoledebug")
+                if (arg.ToLower() == "-debugconsole")
                 {
                     Core.ChangeLoggingLevelConsole(Serilog.Events.LogEventLevel.Debug);
-                    Log.Debug("Launch arg was -consoledebug, changed console logging to debug");
+                    Log.Debug("Launch arg was -debugconsole, changed console logging to debug");
+                }
+                if (arg.ToLower() == "-debugcloud")
+                {
+                    Core.ChangeLoggingLevelCloud(Serilog.Events.LogEventLevel.Debug);
+                    Log.Debug("Launch arg was -debugcloud, changed cloud logging to debug");
                 }
             }
         }
@@ -48,6 +53,20 @@ namespace ArbitraryBot.FrontEnd
                 Constants.CloseApp = true;
             }
             Core.SaveEverything();
+        }
+
+        internal static Alert SelectAlertFromChoice(int alertAnswer)
+        {
+            switch (alertAnswer)
+            {
+                case 1:
+                    return Alert.Webhook;
+                case 2:
+                    return Alert.Email;
+                default:
+                    Log.Warning("Default was hit on switch that shouldn't occur");
+                    return Alert.Email;
+            }
         }
     }
 }

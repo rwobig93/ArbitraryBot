@@ -17,10 +17,10 @@ namespace ArbitraryBot.BackEnd
         internal static void InitializeLogger()
         {
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.ControlledBy(Constants.LogLevel)
+                .MinimumLevel.ControlledBy(Constants.LogLevelLocal)
                 .WriteTo.Async(c => c.File($"{Constants.PathLogs}\\{OSDynamic.GetProductAssembly().ProductName}.log", rollingInterval: RollingInterval.Day,
                   outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"))
-                .WriteTo.Async(c => c.Seq("http://dev.wobigtech.net:5341", apiKey: "xBJXeoMOJzEwG1HBuxgN"))
+                .WriteTo.Async(c => c.Seq("http://dev.wobigtech.net:5341", apiKey: "xBJXeoMOJzEwG1HBuxgN", controlLevelSwitch: Constants.LogLevelCloud))
                 .WriteTo.Console(levelSwitch: Constants.LogLevelConsole,
                   outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}")
                 .Enrich.WithCaller()
@@ -32,7 +32,7 @@ namespace ArbitraryBot.BackEnd
                 .Enrich.WithProperty("Application", OSDynamic.GetProductAssembly().ProductName)
                 .CreateLogger();
 
-            ChangeLoggingLevel();
+            ChangeLoggingLevelLocal();
             Log.Information("==START-STOP== Application Started");
         }
 
@@ -87,20 +87,20 @@ namespace ArbitraryBot.BackEnd
             Log.Information("Finished Initializing First App Run");
         }
 
-        internal static void ChangeLoggingLevel(LogEventLevel logLevel = LogEventLevel.Information)
+        internal static void ChangeLoggingLevelLocal(LogEventLevel logLevel = LogEventLevel.Information)
         {
             #if DEBUG
             logLevel = LogEventLevel.Debug;
             #endif
 
-            if (Constants.LogLevel == null)
+            if (Constants.LogLevelLocal == null)
             {
-                Constants.LogLevel = new Serilog.Core.LoggingLevelSwitch(logLevel);
-                Log.Warning("Logging Level was null and had to be initialized");
+                Constants.LogLevelLocal = new Serilog.Core.LoggingLevelSwitch(logLevel);
+                Log.Warning("Logging Level for local was null and had to be initialized");
             }
             else
             {
-                Constants.LogLevel.MinimumLevel = logLevel;
+                Constants.LogLevelLocal.MinimumLevel = logLevel;
             }
         }
 
@@ -118,6 +118,23 @@ namespace ArbitraryBot.BackEnd
             }
         }
 
+        internal static void ChangeLoggingLevelCloud(LogEventLevel logLevel = LogEventLevel.Warning)
+        {
+            #if DEBUG
+            logLevel = LogEventLevel.Debug;
+            #endif
+
+            if (Constants.LogLevelCloud == null)
+            {
+                Constants.LogLevelCloud = new Serilog.Core.LoggingLevelSwitch(logLevel);
+                Log.Warning("Logging Level for cloud was null and had to be initialized");
+            }
+            else
+            {
+                Constants.LogLevelConsole.MinimumLevel = logLevel;
+            }
+        }
+
         internal static void InitializeApp()
         {
             HouseKeeping.ValidateAllFilePaths(true);
@@ -125,14 +142,22 @@ namespace ArbitraryBot.BackEnd
 
         internal static StatusReturn OpenDir(AppFile appFile)
         {
-            if (OSDynamic.GetCurrentOS() == OSPlatform.Windows)
+            try
             {
-                var file = FileType.GetFileType(appFile);
-                OSDynamic.OpenPath(file.Directory);
-                return StatusReturn.Success;
+                if (OSDynamic.GetCurrentOS() == OSPlatform.Windows)
+                {
+                    var file = FileType.GetFileType(appFile);
+                    OSDynamic.OpenPath(file.Directory);
+                    return StatusReturn.Success;
+                }
+                else
+                {
+                    return StatusReturn.Failure;
+                }
             }
-            else
+            catch (Exception ex)
             {
+                Log.Error(ex, "Failed to open directory");
                 return StatusReturn.Failure;
             }
         }

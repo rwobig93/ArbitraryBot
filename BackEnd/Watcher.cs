@@ -13,5 +13,15 @@ namespace ArbitraryBot.BackEnd
         {
             throw new NotImplementedException();
         }
+
+        internal static void StartOneMinWatcher()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static void StartFiveMinWatcher()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

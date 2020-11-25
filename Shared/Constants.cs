@@ -11,7 +11,8 @@ namespace ArbitraryBot.Shared
     public static class Constants
     {
         // Classes
-        public static LoggingLevelSwitch LogLevel { get; set; } = new LoggingLevelSwitch(Serilog.Events.LogEventLevel.Information);
+        public static LoggingLevelSwitch LogLevelLocal { get; set; } = new LoggingLevelSwitch(Serilog.Events.LogEventLevel.Information);
+        public static LoggingLevelSwitch LogLevelCloud { get; set; } = new LoggingLevelSwitch(Serilog.Events.LogEventLevel.Warning);
         public static LoggingLevelSwitch LogLevelConsole { get; set; } = new LoggingLevelSwitch(Serilog.Events.LogEventLevel.Error);
         public static Config Config { get; set; }
         public static SavedData SavedData { get; set; }

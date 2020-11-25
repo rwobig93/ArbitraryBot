@@ -60,8 +60,8 @@ namespace ArbitraryBot.BackEnd
             {
                 StartJobDataSaver();
                 StartJobCleanup();
-                //StartJobWatcherOneMin();
-                //StartJobWatcherFiveMin();
+                StartJobWatcherOneMin();
+                StartJobWatcherFiveMin();
                 return StatusReturn.Success;
             }
             catch (Exception ex)
@@ -73,17 +73,17 @@ namespace ArbitraryBot.BackEnd
 
         public static void StartJobWatcherFiveMin()
         {
-            throw new NotImplementedException();
+            RecurringJob.AddOrUpdate(() => Watcher.StartFiveMinWatcher(), CronString.MinuteInterval(5));
         }
 
         public static void StartJobWatcherOneMin()
         {
-            throw new NotImplementedException();
+            RecurringJob.AddOrUpdate(() => Watcher.StartOneMinWatcher(), CronString.Minutely);
         }
 
         public static void StartJobCleanup()
         {
-            RecurringJob.AddOrUpdate(() => Core.CleanupAllOldFiles(), CronString.Daily());
+            RecurringJob.AddOrUpdate(() => Core.CleanupAllOldFiles(), CronString.Daily);
         }
 
         public static void StartJobDataSaver()
