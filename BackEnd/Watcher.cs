@@ -63,5 +63,25 @@ namespace ArbitraryBot.BackEnd
                     break;
             }
         }
+
+        internal static void ProcessAlertToTest(TrackedProduct tracker)
+        {
+            Log.Debug("Processing Alert Type For Testing", tracker.AlertType);
+            string title = "Testing alert on the following tracker, Get Pumped!";
+            string msg = $"Testing tracker for the following page: {Environment.NewLine}{tracker.PageURL}";
+            string color = "faf202";
+            switch (tracker.AlertType)
+            {
+                case Alert.Email:
+                    Communication.SendAlertEmail(tracker);
+                    break;
+                case Alert.Webhook:
+                    Communication.SendAlertWebhookDiscord(tracker, title, msg, color);
+                    break;
+                case Alert.Email_Webhook:
+                    Log.Warning("Processed Alert Type Webhook + Email when it isn't implemented yet", tracker);
+                    break;
+            }
+        }
     }
 }

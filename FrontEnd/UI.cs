@@ -81,6 +81,7 @@ namespace ArbitraryBot.FrontEnd
         private static void ShowMenuTestWatcherAlert()
         {
             bool menuClose = false;
+            int currentPage = 1;
             Log.Debug("Presenting Menu TestWatcherAlert");
             while (!menuClose)
             {
@@ -91,11 +92,12 @@ namespace ArbitraryBot.FrontEnd
                     "|                 Select the watcher alert you want to test:                |{0}" +
                     "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
                     "|  1. Back to Main Menu                                                     |{0}", Environment.NewLine);
-                menu = Handler.GetTrackersForMenu(menu);
-                menu = string.Format(
-                    "{1}" +
+                List<IEnumerable<TrackedProduct>> trackerList;
+                menu = Handler.GetTrackersForMenu(menu, currentPage, out trackerList);
+                menu += string.Format(
                     "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                    "{0}Option: ", Environment.NewLine, menu);
+                    "{0}Current Page: {1} " +
+                    "{0}Option: ", Environment.NewLine, currentPage);
                 Console.WriteLine(menu);
                 var answer = Console.ReadLine();
                 Log.Debug("Menu prompt answered", answer);
@@ -108,7 +110,26 @@ namespace ArbitraryBot.FrontEnd
                 else
                 {
                     Log.Debug("Valid menu option was entered", intAnswer);
-                    
+                    var trackerPage = trackerList[currentPage - 1];
+                    if (intAnswer == 1)
+                    {
+                        menuClose = true;
+                    }
+                    else if (intAnswer > 0 && intAnswer <= trackerPage.Count())
+                    {
+                        var selectedTracker = trackerPage.ElementAt(intAnswer);
+                        Watcher.ProcessAlertToTest(selectedTracker);
+                        Console.WriteLine($"Sent test alert for the tracker: {selectedTracker.FriendlyName}");
+                        StopForMessage();
+                    }
+                    else if (intAnswer > trackerPage.Count() && currentPage >= 2)
+                    {
+                        currentPage--;
+                    }
+                    else if (intAnswer > trackerPage.Count() && currentPage < trackerList.Count)
+                    {
+                        currentPage++;
+                    }
                 }
                 Console.Clear();
             }
@@ -202,6 +223,7 @@ namespace ArbitraryBot.FrontEnd
                     "|                                Add Watcher                                |{0}" +
                     "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
                     "{0}Option: ", Environment.NewLine);
+                var friendlyName = UI.PromptQuestion("Enter a name for this tracker");
                 var pageURL = UI.PromptQuestion("Enter the page URL to monitor");
                 var keyWord = UI.PromptQuestion("Enter the keyword you want to look for (case sensitive)");
                 bool alertOnNotExist = UI.PromptYesNo("Do you want the alert to trigger when this keyword doesn't exist? (if no then alert triggers when the keyword doesn't exist)");
@@ -220,6 +242,7 @@ namespace ArbitraryBot.FrontEnd
                 Alert selectedAlert = Handler.SelectAlertFromChoice(alertAnswer);
                 var newTracker = new TrackedProduct()
                 {
+                    FriendlyName = friendlyName,
                     PageURL = pageURL,
                     Keyword = keyWord,
                     AlertOnKeywordNotExist = alertOnNotExist,

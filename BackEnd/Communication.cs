@@ -19,14 +19,21 @@ namespace ArbitraryBot.BackEnd
             throw new NotImplementedException();
         }
 
-        internal static void SendAlertWebhookDiscord(TrackedProduct tracker)
+        internal static void SendAlertWebhookDiscord(TrackedProduct tracker, string _title = null, string _msg = null, string _color = "0af5ed")
         {
             try
             {
-                var msg = $"Tracker alert for the following page:{Environment.NewLine}{tracker.PageURL}";
+                if (_title == null)
+                {
+                    _title = "Keyword alert on the following tracker, Go Go Go!";
+                }
+                if (_msg == null)
+                {
+                    _msg = $"Alerting on tracker for the following page:{Environment.NewLine}{tracker.PageURL}";
+                }
                 if (!string.IsNullOrWhiteSpace(tracker.MentionString))
                 {
-                    msg = $"{tracker.MentionString} {msg}";
+                    _msg = $"{tracker.MentionString} {_msg}";
                 }
                 string jsonSend = JsonConvert.SerializeObject(new
                 {
@@ -36,9 +43,9 @@ namespace ArbitraryBot.BackEnd
                         {
                         new
                         {
-                            description = msg,
-                            title = "Keyword alert on the following tracker, Go Go Go!",
-                            color = ""
+                            description = _msg,
+                            title = _title,
+                            color = _color
                         }
                     }
                 });
