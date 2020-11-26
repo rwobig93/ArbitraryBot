@@ -79,11 +79,13 @@ namespace ArbitraryBot.FrontEnd
             {
                 case 1:
                     Log.Debug("Adding tracker to 1min queue", tracker, intervalAnswer);
+                    tracker.AlertInterval = TrackInterval.OneMin;
                     Constants.SavedData.TrackedProducts1Min.Add(tracker);
                     Log.Information("Added tracker to 1min queue", tracker, intervalAnswer);
                     break;
                 case 2:
                     Log.Debug("Adding tracker to 5min queue", tracker, intervalAnswer);
+                    tracker.AlertInterval = TrackInterval.FiveMin;
                     Constants.SavedData.TrackedProducts5Min.Add(tracker);
                     Log.Information("Added tracker to 5min queue", tracker, intervalAnswer);
                     break;
@@ -92,6 +94,11 @@ namespace ArbitraryBot.FrontEnd
                     Constants.SavedData.TrackedProducts5Min.Add(tracker);
                     break;
             }
+        }
+
+        internal static string GetTrackersForMenu(string menu)
+        {
+            throw new NotImplementedException();
         }
     }
 }

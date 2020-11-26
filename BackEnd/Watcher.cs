@@ -56,7 +56,7 @@ namespace ArbitraryBot.BackEnd
                     Communication.SendAlertEmail(tracker);
                     break;
                 case Alert.Webhook:
-                    Communication.SendAlertWebhook(tracker);
+                    Communication.SendAlertWebhookDiscord(tracker);
                     break;
                 case Alert.Email_Webhook:
                     Log.Warning("Processed Alert Type Webhook + Email when it isn't implemented yet", tracker);

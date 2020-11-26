@@ -18,18 +18,85 @@ namespace ArbitraryBot.FrontEnd
             Log.Debug("Presenting Menu Root");
             while (!Constants.CloseApp)
             {
-                Console.WriteLine(
+                try
+                {
+                    Console.WriteLine(
+                                "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
+                                "|                                 Main Menu                                 |{0}" +
+                                "|  -----------------------------------------------------------------------  |{0}" +
+                                "|  Enter the corresponding menu number for the action you want to perform:  |{0}" +
+                                "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
+                                "|  1. Add Watcher                                                           |{0}" +
+                                "|  2. Modify Watcher                                                        |{0}" +
+                                "|  3. Test Watcher Alert                                                    |{0}" +
+                                "|  4. Open Directory                                                        |{0}" +
+                                "|  5. Close Bot                                                             |{0}" +
+                                "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
+                                "{0}Option: ", Environment.NewLine);
+                    var answer = Console.ReadLine();
+                    Log.Debug("Menu prompt answered", answer);
+                    if (!int.TryParse(answer, out int intAnswer))
+                    {
+                        Log.Debug("Menu answer entered was an invalid response");
+                        Console.WriteLine("Answer wasn't invalid, please press enter and try again");
+                        Console.ReadLine();
+                    }
+                    else
+                    {
+                        Log.Debug("Valid menu option was entered", intAnswer);
+                        switch (intAnswer)
+                        {
+                            case 1:
+                                ShowMenuAddWatcher();
+                                break;
+                            case 2:
+                                ShowMenuModifyWatcher();
+                                break;
+                            case 3:
+                                ShowMenuTestWatcherAlert();
+                                break;
+                            case 4:
+                                ShowMenuOpenDirectory();
+                                break;
+                            case 5:
+                                Handler.CloseApp();
+                                break;
+                            default:
+                                Log.Information("Answer entered wasn't a valid presented option");
+                                Console.WriteLine("Answer entered isn't one of the options, please press enter and try again");
+                                Console.ReadLine();
+                                break;
+                        }
+                    }
+                    Console.Clear();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, $"Error: {ex.Message}");
+                }
+            }
+            Log.Information("Exited menu root");
+        }
+
+        private static void ShowMenuTestWatcherAlert()
+        {
+            bool menuClose = false;
+            Log.Debug("Presenting Menu TestWatcherAlert");
+            while (!menuClose)
+            {
+                string menu = string.Format(
                     "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                    "|                                 Main Menu                                 |{0}" +
+                    "|                             Test Watcher Alert                            |{0}" +
                     "|  -----------------------------------------------------------------------  |{0}" +
-                    "|  Enter the corresponding menu number for the action you want to perform:  |{0}" +
+                    "|                 Select the watcher alert you want to test:                |{0}" +
                     "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                    "|  1. Add Watcher                                                           |{0}" +
-                    "|  2. Modify Watcher                                                        |{0}" +
-                    "|  3. Open Directory                                                        |{0}" +
-                    "|  4. Close Bot                                                             |{0}" +
+                    "|  1. Back to Main Menu                                                     |{0}", Environment.NewLine);
+                menu = Handler.GetTrackersForMenu(menu);
+                menu = string.Format(
+                    "{1}" +
                     "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                    "{0}Option: ", Environment.NewLine);
+                    "{0}Option: ", Environment.NewLine, menu);
+                Console.WriteLine(menu);
                 var answer = Console.ReadLine();
                 Log.Debug("Menu prompt answered", answer);
                 if (!int.TryParse(answer, out int intAnswer))
@@ -41,30 +108,11 @@ namespace ArbitraryBot.FrontEnd
                 else
                 {
                     Log.Debug("Valid menu option was entered", intAnswer);
-                    switch (intAnswer)
-                    {
-                        case 1:
-                            ShowMenuAddWatcher();
-                            break;
-                        case 2:
-                            ShowMenuModifyWatcher();
-                            break;
-                        case 3:
-                            ShowMenuOpenDirectory();
-                            break;
-                        case 4:
-                            Handler.CloseApp();
-                            break;
-                        default:
-                            Log.Information("Answer entered wasn't a valid presented option");
-                            Console.WriteLine("Answer entered isn't one of the options, please press enter and try again");
-                            Console.ReadLine();
-                            break;
-                    }
+                    
                 }
                 Console.Clear();
             }
-            Log.Information("Exited menu root");
+            Log.Information("Exited Menu TestWatcherAlert");
         }
 
         private static void ShowMenuOpenDirectory()
@@ -180,7 +228,7 @@ namespace ArbitraryBot.FrontEnd
                 if (selectedAlert == Alert.Webhook)
                 {
                     newTracker.WebHookURL = UI.PromptQuestion("Enter the webhook URL");
-                    newTracker.MentionString = UI.PromptQuestion("Enter a mention string or message prefix (leave blank if you don't want anything at the beginning of the webhook message");
+                    newTracker.MentionString = $"@&{UI.PromptQuestion($"Enter an ID of a user or role you want to mention{Environment.NewLine} (leave blank if you don't want a mention with the alert")}";
                 }
                 else
                 {
