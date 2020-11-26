@@ -20,7 +20,8 @@ namespace ArbitraryBot.FrontEnd
             {
                 try
                 {
-                    Console.WriteLine(
+                    Console.Write(
+                                "{0}" +
                                 "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
                                 "|                                 Main Menu                                 |{0}" +
                                 "|  -----------------------------------------------------------------------  |{0}" +
@@ -92,8 +93,16 @@ namespace ArbitraryBot.FrontEnd
                     "|                 Select the watcher alert you want to test:                |{0}" +
                     "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
                     "|  1. Back to Main Menu                                                     |{0}", Environment.NewLine);
-                List<IEnumerable<TrackedProduct>> trackerList;
+                List<IEnumerable<TrackedProduct>> trackerList = new List<IEnumerable<TrackedProduct>>();
                 menu = Handler.GetTrackersForMenu(menu, currentPage, out trackerList);
+                if (trackerList.Count <= 0)
+                {
+                    Console.WriteLine($"There currently aren't any trackers created!{Environment.NewLine}" +
+                        $"Please create one before attempting to test");
+                    StopForMessage();
+                    menuClose = true;
+                    return;
+                }
                 menu += string.Format(
                     "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
                     "{0}Current Page: {1} " +
@@ -203,7 +212,7 @@ namespace ArbitraryBot.FrontEnd
         private static void StopForMessage()
         {
             Log.Debug("Stopping for a message that is being displayed");
-            Console.WriteLine("Press enter to continue");
+            Console.WriteLine($"{Environment.NewLine}Press enter to continue");
             Console.ReadLine();
         }
 
@@ -220,13 +229,13 @@ namespace ArbitraryBot.FrontEnd
             {
                 Console.WriteLine(
                     "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                    "|                                Add Watcher                                |{0}" +
+                    "|                                Add Tracker                                |{0}" +
                     "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
                     "{0}Option: ", Environment.NewLine);
                 var friendlyName = UI.PromptQuestion("Enter a name for this tracker");
                 var pageURL = UI.PromptQuestion("Enter the page URL to monitor");
                 var keyWord = UI.PromptQuestion("Enter the keyword you want to look for (case sensitive)");
-                bool alertOnNotExist = UI.PromptYesNo("Do you want the alert to trigger when this keyword doesn't exist? (if no then alert triggers when the keyword doesn't exist)");
+                bool alertOnNotExist = UI.PromptYesNo($"Do you want the alert to trigger when this keyword doesn't exist?{Environment.NewLine} (if no then alert triggers when the keyword does exist)");
                 int intervalAnswer = UI.PromptMultipleChoice("Which interval would you like this tracker to check?",
                     new string[] 
                     {
@@ -265,26 +274,28 @@ namespace ArbitraryBot.FrontEnd
                 Handler.SelectTrackerIntervalFromChoice(intervalAnswer, newTracker);
                 Log.Information("Created new tracker!", newTracker);
                 Console.Write($"Successfully created tracker! {Environment.NewLine}URL: {newTracker.PageURL}");
+                menuClose = true;
                 UI.StopForMessage();
                 Console.Clear();
             }
             Log.Information("Exited Menu AddWatcher");
         }
 
-        private static int PromptMultipleChoice(string question, string[] choices)
+        private static int PromptMultipleChoice(string question, string[] choices, bool validate = false)
         {
             Log.Debug("Asking PromptMultipleChoice", question, choices);
             bool answered = false;
             int retAnswer = 0;
             while (!answered)
             {
-                Console.WriteLine($"{question}: ");
                 var counter = 1;
+                Console.WriteLine($"{question}: ");
                 foreach (var choice in choices)
                 {
                     Console.WriteLine($"   {counter}. {choice}");
                     counter++;
                 }
+                Console.Write($"{Environment.NewLine}Option: ");
                 string answer = Console.ReadLine();
                 if (!int.TryParse(answer, out int intAnswer))
                 {
@@ -300,16 +311,24 @@ namespace ArbitraryBot.FrontEnd
                 }
                 else
                 {
-                    Console.WriteLine($"You entered: {answer}{Environment.NewLine}Is this correct?  [y/n] ");
-                    var bAnswer = Console.ReadLine().ToLower();
-                    if (bAnswer != "y" && bAnswer != "n")
+                    if (validate)
                     {
-                        Log.Debug("Answer was invalid", answer);
-                        Console.WriteLine("You entered an invalid response, please try again");
-                    }
-                    else if (bAnswer != "n")
-                    {
-                        Log.Debug("Answer was no, asking again", bAnswer);
+                        Console.Write($"You chose: {choices[intAnswer - 1]}{Environment.NewLine}Is this correct?  [y/n] ");
+                        var bAnswer = Console.ReadLine().ToLower();
+                        if (bAnswer != "y" && bAnswer != "n")
+                        {
+                            Log.Debug("Answer was invalid", answer);
+                            Console.WriteLine("You entered an invalid response, please try again");
+                        }
+                        else if (bAnswer == "n")
+                        {
+                            Log.Debug("Answer was no, asking again", bAnswer);
+                        }
+                        else
+                        {
+                            retAnswer = intAnswer;
+                            answered = true;
+                        }
                     }
                     else
                     {
@@ -322,7 +341,7 @@ namespace ArbitraryBot.FrontEnd
             return retAnswer;
         }
 
-        private static string PromptQuestion(string question)
+        private static string PromptQuestion(string question, bool validate = false)
         {
             Log.Debug("Asking PromptQuestion", question);
             bool answered = false;
@@ -331,16 +350,23 @@ namespace ArbitraryBot.FrontEnd
             {
                 Console.Write($"{question}: ");
                 answer = Console.ReadLine();
-                Console.WriteLine($"You entered: {answer}{Environment.NewLine}Is this correct?  [y/n] ");
-                var bAnswer = Console.ReadLine().ToLower();
-                if (bAnswer != "y" && bAnswer != "n")
+                if (validate)
                 {
-                    Log.Debug("Answer was invalid", answer);
-                    Console.WriteLine("You entered an invalid response, please try again");
-                }
-                else if (bAnswer != "n")
-                {
-                    Log.Debug("Answer was no, asking again", bAnswer);
+                    Console.Write($"You entered: {answer}{Environment.NewLine}Is this correct?  [y/n] ");
+                    var bAnswer = Console.ReadLine().ToLower();
+                    if (bAnswer != "y" && bAnswer != "n")
+                    {
+                        Log.Debug("Answer was invalid", answer);
+                        Console.WriteLine("You entered an invalid response, please try again");
+                    }
+                    else if (bAnswer == "n")
+                    {
+                        Log.Debug("Answer was no, asking again", bAnswer);
+                    }
+                    else
+                    {
+                        answered = true;
+                    }
                 }
                 else
                 {
@@ -355,7 +381,6 @@ namespace ArbitraryBot.FrontEnd
         {
             Log.Debug("Displaying host info");
             Console.WriteLine(
-                $"{Environment.NewLine}" +
                 $"Hostname:                {Environment.MachineName}{Environment.NewLine}" +
                 $"Current OS Platform:     {OSDynamic.GetCurrentOS()}{Environment.NewLine}" +
                 $"Current OS Architecture: {RuntimeInformation.OSArchitecture}{Environment.NewLine}" +

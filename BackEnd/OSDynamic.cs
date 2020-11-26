@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -80,7 +81,18 @@ namespace ArbitraryBot.BackEnd
 
         internal static void OpenPath(string directory)
         {
-            throw new NotImplementedException();
+            if (OperatingSystem.IsWindows())
+            {
+                Process proc = new Process()
+                {
+                    StartInfo = new ProcessStartInfo()
+                    {
+                        FileName = "C:\\Windows\\explorer.exe",
+                        Arguments = directory
+                    }
+                };
+                proc.Start();
+            }
         }
     }
 }

@@ -11,7 +11,7 @@ namespace ArbitraryBot.BackEnd
 {
     public static class Watcher
     {
-        internal static void CheckOnTrackers(TrackInterval interval)
+        public static void CheckOnTrackers(TrackInterval interval)
         {
             switch (interval)
             {
@@ -26,7 +26,7 @@ namespace ArbitraryBot.BackEnd
             }
         }
 
-        private static async void ProcessAlertNeedOnTracker(TrackedProduct tracker)
+        public static async void ProcessAlertNeedOnTracker(TrackedProduct tracker)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace ArbitraryBot.BackEnd
             }
         }
 
-        private static void ProcessAlertToSend(TrackedProduct tracker)
+        public static void ProcessAlertToSend(TrackedProduct tracker)
         {
             Log.Debug("Processing Alert Type", tracker.AlertType);
             switch (tracker.AlertType)
@@ -64,7 +64,7 @@ namespace ArbitraryBot.BackEnd
             }
         }
 
-        internal static void ProcessAlertToTest(TrackedProduct tracker)
+        public static void ProcessAlertToTest(TrackedProduct tracker)
         {
             Log.Debug("Processing Alert Type For Testing", tracker.AlertType);
             string title = "Testing alert on the following tracker, Get Pumped!";

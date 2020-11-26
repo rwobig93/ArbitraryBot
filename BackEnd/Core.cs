@@ -16,10 +16,16 @@ namespace ArbitraryBot.BackEnd
     {
         internal static void InitializeLogger()
         {
+            #if DEBUG
+            Constants.LogLevelCloud.MinimumLevel = LogEventLevel.Debug;
+            Constants.LogLevelLocal.MinimumLevel = LogEventLevel.Debug;
+            #endif
+
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.ControlledBy(Constants.LogLevelLocal)
-                .WriteTo.Async(c => c.File($"{Constants.PathLogs}\\{OSDynamic.GetProductAssembly().ProductName}.log", rollingInterval: RollingInterval.Day,
-                  outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"))
+                //.MinimumLevel.ControlledBy(Constants.LogLevelLocal)
+                .WriteTo.Async(c => c.File($"{Constants.PathLogs}\\{OSDynamic.GetProductAssembly().ProductName}_.log", rollingInterval: RollingInterval.Day,
+                  outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
+                  levelSwitch: Constants.LogLevelLocal))
                 .WriteTo.Async(c => c.Seq("http://dev.wobigtech.net:5341", apiKey: "xBJXeoMOJzEwG1HBuxgN", controlLevelSwitch: Constants.LogLevelCloud))
                 .WriteTo.Console(levelSwitch: Constants.LogLevelConsole,
                   outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}")
@@ -33,6 +39,9 @@ namespace ArbitraryBot.BackEnd
                 .CreateLogger();
 
             ChangeLoggingLevelLocal();
+            ChangeLoggingLevelCloud();
+            ChangeLoggingLevelConsole();
+
             Log.Information("==START-STOP== Application Started");
         }
 
@@ -79,11 +88,13 @@ namespace ArbitraryBot.BackEnd
         internal static void InitializeFirstRun()
         {
             Config.CreateNew();
+            SavedData.CreateNew();
             if (Constants.CloseApp)
             {
                 return;
             }
             Config.Save();
+            SavedData.Save();
             Log.Information("Finished Initializing First App Run");
         }
 
@@ -159,6 +170,34 @@ namespace ArbitraryBot.BackEnd
             {
                 Log.Error(ex, "Failed to open directory");
                 return StatusReturn.Failure;
+            }
+        }
+
+        internal static StatusReturn LoadAllFiles()
+        {
+            StatusReturn confStatus = Config.Load();
+            StatusReturn saveStatus = SavedData.Load();
+            if (confStatus != StatusReturn.Success && saveStatus != StatusReturn.Success)
+            {
+                Log.Information("Neither a config or savedata file was found", confStatus, saveStatus);
+                return StatusReturn.NotFound;
+            }
+            else if (confStatus != StatusReturn.Success && saveStatus == StatusReturn.Success)
+            {
+                Log.Information("A config file wasn't found but a savedata file was, generating config file", confStatus, saveStatus);
+                Config.CreateNew();
+                return StatusReturn.Success;
+            }
+            else if (saveStatus != StatusReturn.Success && confStatus == StatusReturn.Success)
+            {
+                Log.Information("A savedata file wasn't found but a config file was, generating savedata file", confStatus, saveStatus);
+                SavedData.CreateNew();
+                return StatusReturn.Success;
+            }
+            else
+            {
+                Log.Information("All files were found and loaded successfully", confStatus, saveStatus);
+                return StatusReturn.Success;
             }
         }
     }

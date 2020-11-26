@@ -28,7 +28,7 @@ namespace ArbitraryBot.Shared
                     var saveDataLoaded = File.ReadAllText(saveFile);
                     Constants.SavedData = JsonConvert.DeserializeObject<SavedData>(saveDataLoaded);
                     Log.Information("Successfully deserialized savedData file");
-                    return StatusReturn.Found;
+                    return StatusReturn.Success;
                 }
                 else
                 {
@@ -91,6 +91,12 @@ namespace ArbitraryBot.Shared
             }
         }
 
+        internal static void Remove()
+        {
+            string saveFile = OSDynamic.GetFilePath(Constants.PathSavedData, "SaveData.json");
+            File.Delete(saveFile);
+        }
+
         public static StatusReturn Backup()
         {
             try
@@ -103,6 +109,25 @@ namespace ArbitraryBot.Shared
             {
                 Log.Error(ex, "Failed to backup savedData file");
                 return StatusReturn.Failure;
+            }
+        }
+        internal static void CreateNew()
+        {
+            try
+            {
+                string saveFile = OSDynamic.GetFilePath(Constants.PathSavedData, "SaveData.json");
+                if (File.Exists(saveFile))
+                {
+                    Log.Warning($"SaveData file already exists, will back it up before creating a new one: {saveFile}");
+                    Backup();
+                    Remove();
+                }
+                Constants.SavedData = new SavedData();
+                Log.Information("Created new SaveData");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to create new savedata file");
             }
         }
     }

@@ -15,7 +15,7 @@ namespace ArbitraryBot
 
             Handler.ParseLaunchArgs(args);
 
-            if (Config.Load() != StatusReturn.Success)
+            if (Core.LoadAllFiles() != StatusReturn.Success)
             {
                 Core.InitializeFirstRun();
             }

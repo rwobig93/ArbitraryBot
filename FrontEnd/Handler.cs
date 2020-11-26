@@ -99,34 +99,50 @@ namespace ArbitraryBot.FrontEnd
 
         internal static string GetTrackersForMenu(string menu, int currentPage, out List<IEnumerable<TrackedProduct>> splitList)
         {
-            // Enumerate tracked product lists and combine into a single list
             splitList = new List<IEnumerable<TrackedProduct>>();
-            foreach (var trackerSplit in Constants.SavedData.TrackedProducts1Min.Split(
-                (int)Math.Round((double)Constants.SavedData.TrackedProducts1Min.Count / 7)))
+            var trackerOne = Constants.SavedData.TrackedProducts1Min;
+            var trackerFive = Constants.SavedData.TrackedProducts5Min;
+
+            // Enumerate tracked product lists and combine into a single list
+            if (trackerOne.Count > 7)
             {
-                splitList.Add(trackerSplit);
+                foreach (var trackerSplit in trackerOne.Split(
+                    (int)Math.Round((double)trackerOne.Count / 7)))
+                {
+                    splitList.Add(trackerSplit);
+                }
             }
-            foreach (var trackerSplit in Constants.SavedData.TrackedProducts5Min.Split(
-                (int)Math.Round((double)Constants.SavedData.TrackedProducts5Min.Count / 7)))
+            else
             {
-                splitList.Add(trackerSplit);
+                // Add individuals
+            }
+            if (trackerFive.Count > 7)
+            {
+                foreach (var trackerSplit in trackerFive.Split(
+                    (int)Math.Round((double)trackerFive.Count / 7)))
+                {
+                    splitList.Add(trackerSplit);
+                }
             }
 
             // Build menu from the single tracked product list
             var menuNum = 2;
-            foreach (TrackedProduct tracker in splitList[currentPage - 1])
+            if (splitList.Count > 0)
             {
-                menu += tracker.FriendlyName.ConvertToMenuOption(menuNum);
-                menuNum++;
-            }
-            if (currentPage >= 2)
-            {
-                menu += "Go to previous page".ConvertToMenuOption(menuNum);
-                menuNum++;
-            }
-            if (splitList.Count > 0 && currentPage < splitList.Count)
-            {
-                menu += "Go to next page".ConvertToMenuOption(menuNum);
+                foreach (TrackedProduct tracker in splitList[currentPage - 1])
+                {
+                    menu += tracker.FriendlyName.ConvertToMenuOption(menuNum);
+                    menuNum++;
+                }
+                if (currentPage >= 2)
+                {
+                    menu += "Go to previous page".ConvertToMenuOption(menuNum);
+                    menuNum++;
+                }
+                if (splitList.Count > 0 && currentPage < splitList.Count)
+                {
+                    menu += "Go to next page".ConvertToMenuOption(menuNum);
+                }
             }
 
             return menu;
