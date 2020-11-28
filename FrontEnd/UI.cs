@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using ArbitraryBot.BackEnd;
 using ArbitraryBot.Shared;
 using Serilog;
+using Nito.AsyncEx.Synchronous;
+using ArbitraryBot.Extensions;
 
 namespace ArbitraryBot.FrontEnd
 {
@@ -20,54 +22,44 @@ namespace ArbitraryBot.FrontEnd
             {
                 try
                 {
-                    Console.Write(
-                                "{0}" +
-                                "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                                "|                                 Main Menu                                 |{0}" +
-                                "|  -----------------------------------------------------------------------  |{0}" +
-                                "|  Enter the corresponding menu number for the action you want to perform:  |{0}" +
-                                "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                                "|  1. Add Watcher                                                           |{0}" +
-                                "|  2. Modify Watcher                                                        |{0}" +
-                                "|  3. Test Watcher Alert                                                    |{0}" +
-                                "|  4. Open Directory                                                        |{0}" +
-                                "|  5. Close Bot                                                             |{0}" +
-                                "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                                "{0}Option: ", Environment.NewLine);
-                    var answer = Console.ReadLine();
-                    Log.Debug("Menu prompt answered: {Answer}", answer);
-                    if (!int.TryParse(answer, out int intAnswer))
+                    string menuName = "Main Menu";
+                    string description = "Enter the corresponding menu number for the action you want to perform:";
+                    string[] menuChoices = new string[]
                     {
-                        Log.Debug("Menu answer entered was an invalid response");
-                        Console.WriteLine("Answer wasn't invalid, please press enter and try again");
-                        Console.ReadLine();
-                    }
-                    else
+                        "Add Watcher",
+                        "Modify Watcher",
+                        "Test Watcher Alert",
+                        "Test Keyword On Website",
+                        "Open Directory",
+                        "Close Bot"
+                    };
+                    int answer = Prompts.PromptMenu(menuName, menuChoices, description);
+                    
+                    switch (answer)
                     {
-                        Log.Debug("Valid menu option was entered: {Answer}", intAnswer);
-                        switch (intAnswer)
-                        {
-                            case 1:
-                                ShowMenuAddWatcher();
-                                break;
-                            case 2:
-                                ShowMenuModifyWatcher();
-                                break;
-                            case 3:
-                                ShowMenuTestWatcherAlert();
-                                break;
-                            case 4:
-                                ShowMenuOpenDirectory();
-                                break;
-                            case 5:
-                                Handler.CloseApp();
-                                break;
-                            default:
-                                Log.Information("Answer entered wasn't a valid presented option");
-                                Console.WriteLine("Answer entered isn't one of the options, please press enter and try again");
-                                Console.ReadLine();
-                                break;
-                        }
+                        case 1:
+                            ShowMenuAddWatcher();
+                            break;
+                        case 2:
+                            ShowMenuModifyWatcher();
+                            break;
+                        case 3:
+                            ShowMenuTestWatcherAlert();
+                            break;
+                        case 4:
+                            ShowMenuTestKeywordOnWebpage();
+                            break;
+                        case 5:
+                            ShowMenuOpenDirectory();
+                            break;
+                        case 6:
+                            Handler.CloseApp();
+                            break;
+                        default:
+                            Log.Information("Answer entered wasn't a valid presented option");
+                            Console.WriteLine("Answer entered isn't one of the options, please press enter and try again");
+                            Console.ReadLine();
+                            break;
                     }
                     Console.Clear();
                 }
@@ -79,67 +71,81 @@ namespace ArbitraryBot.FrontEnd
             Log.Information("Exited menu root");
         }
 
-        private static void ShowMenuTestWatcherAlert()
+        private static void ShowMenuTestKeywordOnWebpage()
         {
-            Console.Clear();
             bool menuClose = false;
-            int currentPage = 1;
-            Log.Debug("Presenting Menu TestWatcherAlert");
             while (!menuClose)
             {
-                string menu = string.Format(
-                    "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                    "|                             Test Watcher Alert                            |{0}" +
-                    "|  -----------------------------------------------------------------------  |{0}" +
-                    "|                 Select the watcher alert you want to test:                |{0}" +
-                    "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                    "|  1. Back to Main Menu                                                     |{0}", Environment.NewLine);
-                List<List<TrackedProduct>> trackerList = new List<List<TrackedProduct>>();
-                menu = Handler.GetTrackersForMenu(menu, currentPage, out trackerList);
-                if (trackerList[0].Count <= 0)
+                Prompts.PromptMenuAction("Test Keyword On Webpage");
+                var webpage = Prompts.PromptQuestion("Enter the webpage URL");
+                var keyword = Prompts.PromptQuestion("Enter the keyword");
+                WebCheck webCheck = null;
+
+                try
                 {
-                    Console.WriteLine($"There currently aren't any trackers created!{Environment.NewLine}" +
-                        $"Please create one before attempting to test");
-                    StopForMessage();
+                    webCheck = Communication.DoesKeywordExistOnWebpage(webpage, keyword).WaitAndUnwrapException();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error from webpage: {ex.Message}");
+                }
+
+                if (webCheck != null)
+                {
+                    if (webCheck.KeywordExists)
+                    {
+                        Console.WriteLine("The keyword was found!");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Webpage Response StatusCode: {webCheck.ResponseCode}");
+                        Console.WriteLine("The keyword wasn't found on the webpage :(");
+                    }
+                }
+                var tryAgain = Prompts.PromptYesNo("Would you like to do another test?");
+                if (!tryAgain)
+                {
                     menuClose = true;
+                }
+                Console.Clear();
+            }
+            Log.Information("Exited Menu TestKeywordOnWebpage");
+        }
+
+        private static void ShowMenuTestWatcherAlert()
+        {
+            bool menuClose = false;
+            int currentPage = 1;
+            while (!menuClose)
+            {
+                string menuName = "Test Watcher Alert";
+                string description = "Select the watcher alert you want to test:";
+                List<List<TrackedProduct>> trackerList = new List<List<TrackedProduct>>();
+                var answer = Prompts.PromptMenuTrackers(menuName, currentPage, out trackerList, description);
+                if (answer < 0)
+                {
                     return;
                 }
-                menu += string.Format(
-                    "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                    "{0}Current Page: {1} " +
-                    "{0}Option: ", Environment.NewLine, currentPage);
-                Console.Write(menu);
-                var answer = Console.ReadLine();
-                Log.Debug("Menu prompt answered: {Answer}", answer);
-                if (!int.TryParse(answer, out int intAnswer))
+                
+                var trackerPage = trackerList[currentPage - 1];
+                if (answer == 1)
                 {
-                    Log.Debug("Menu answer entered was an invalid response");
-                    Console.WriteLine("Answer wasn't invalid, please press enter and try again");
-                    Console.ReadLine();
+                    menuClose = true;
                 }
-                else
+                else if (answer > 0 && answer <= trackerPage.Count() + 1)
                 {
-                    Log.Debug("Valid menu option was entered {Answer}", intAnswer);
-                    var trackerPage = trackerList[currentPage - 1];
-                    if (intAnswer == 1)
-                    {
-                        menuClose = true;
-                    }
-                    else if (intAnswer > 0 && intAnswer <= trackerPage.Count() + 1)
-                    {
-                        var selectedTracker = trackerPage.ElementAt(intAnswer - 2);
-                        Watcher.ProcessAlertToTest(selectedTracker);
-                        Console.WriteLine($"Sent test alert for the tracker: {selectedTracker.FriendlyName}");
-                        StopForMessage();
-                    }
-                    else if (intAnswer > trackerPage.Count() + 1 && currentPage >= 2)
-                    {
-                        currentPage--;
-                    }
-                    else if (intAnswer > trackerPage.Count() + 1 && currentPage < trackerList.Count)
-                    {
-                        currentPage++;
-                    }
+                    var selectedTracker = trackerPage.ElementAt(answer - 2);
+                    Watcher.ProcessAlertToTest(selectedTracker);
+                    Console.WriteLine($"Sent test alert for the tracker: {selectedTracker.FriendlyName}");
+                    StopForMessage();
+                }
+                else if (answer > trackerPage.Count() + 1 && currentPage >= 2)
+                {
+                    currentPage--;
+                }
+                else if (answer > trackerPage.Count() + 1 && currentPage < trackerList.Count)
+                {
+                    currentPage++;
                 }
                 Console.Clear();
             }
@@ -149,61 +155,46 @@ namespace ArbitraryBot.FrontEnd
         private static void ShowMenuOpenDirectory()
         {
             bool menuClose = false;
-            Log.Debug("Presenting Menu OpenDirectory");
             while (!menuClose)
             {
-                Console.WriteLine(
-                    "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                    "|                               Open Directory                              |{0}" +
-                    "|  -----------------------------------------------------------------------  |{0}" +
-                    "|  Enter the corresponding menu number for the action you want to perform:  |{0}" +
-                    "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                    "|  1. Open Config Directory                                                 |{0}" +
-                    "|  2. Open Log Directory                                                    |{0}" +
-                    "|  3. Open SaveData Directory                                               |{0}" +
-                    "|  4. Back to Main Menu                                                     |{0}" +
-                    "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                    "{0}Option: ", Environment.NewLine);
-                var answer = Console.ReadLine();
-                Log.Debug("Menu prompt answered: {Answer}", answer);
-                if (!int.TryParse(answer, out int intAnswer))
+                string menuName = "Open Directory";
+                string description = "Which directory would you like to open?";
+                string[] menuChoices = new string[]
                 {
-                    Log.Debug("Menu answer entered was an invalid response");
-                    Console.WriteLine("Answer wasn't invalid, please press enter and try again");
-                    Console.ReadLine();
-                }
-                else
+                    "Open Config Directory",
+                    "Open Log Directory",
+                    "Open SaveData Directory",
+                    "Back to Main Menu"
+                };
+                int answer = Prompts.PromptMenu(menuName, menuChoices, description);
+                switch (answer)
                 {
-                    Log.Debug("Valid menu option was entered: {Answer}", intAnswer);
-                    switch (intAnswer)
-                    {
-                        case 1:
-                            if (Core.OpenDir(AppFile.Config) != StatusReturn.Success)
-                            {
-                                UI.StopForMessage();
-                            }
-                            break;
-                        case 2:
-                            if (Core.OpenDir(AppFile.Log) != StatusReturn.Success)
-                            {
-                                UI.StopForMessage();
-                            }
-                            break;
-                        case 3:
-                            if (Core.OpenDir(AppFile.SavedData) != StatusReturn.Success)
-                            {
-                                UI.StopForMessage();
-                            }
-                            break;
-                        case 4:
-                            menuClose = true;
-                            break;
-                        default:
-                            Log.Information("Answer entered wasn't a valid presented option");
-                            Console.WriteLine("Answer entered isn't one of the options, please press enter and try again");
-                            Console.ReadLine();
-                            break;
-                    }
+                    case 1:
+                        if (Core.OpenDir(AppFile.Config) != StatusReturn.Success)
+                        {
+                            UI.StopForMessage();
+                        }
+                        break;
+                    case 2:
+                        if (Core.OpenDir(AppFile.Log) != StatusReturn.Success)
+                        {
+                            UI.StopForMessage();
+                        }
+                        break;
+                    case 3:
+                        if (Core.OpenDir(AppFile.SavedData) != StatusReturn.Success)
+                        {
+                            UI.StopForMessage();
+                        }
+                        break;
+                    case 4:
+                        menuClose = true;
+                        break;
+                    default:
+                        Log.Information("Answer entered wasn't a valid presented option");
+                        Console.WriteLine("Answer entered isn't one of the options, please press enter and try again");
+                        Console.ReadLine();
+                        break;
                 }
                 Console.Clear();
             }
@@ -225,25 +216,20 @@ namespace ArbitraryBot.FrontEnd
         private static void ShowMenuAddWatcher()
         {
             bool menuClose = false;
-            Log.Debug("Presenting Menu AddWatcher");
             while (!menuClose)
             {
-                Console.WriteLine(
-                    "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                    "|                                Add Tracker                                |{0}" +
-                    "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
-                    "{0}Option: ", Environment.NewLine);
-                var friendlyName = UI.PromptQuestion("Enter a name for this tracker");
-                var pageURL = UI.PromptQuestion("Enter the page URL to monitor");
-                var keyWord = UI.PromptQuestion("Enter the keyword you want to look for (case sensitive)");
-                bool alertOnNotExist = UI.PromptYesNo($"Do you want the alert to trigger when this keyword doesn't exist?{Environment.NewLine} (if no then alert triggers when the keyword does exist)");
-                int intervalAnswer = UI.PromptMultipleChoice("Which interval would you like this tracker to check?",
-                    new string[] 
+                Prompts.PromptMenuAction("Add a Watcher");
+                var friendlyName = Prompts.PromptQuestion("Enter a name for this tracker");
+                var pageURL = Prompts.PromptQuestion("Enter the page URL to monitor");
+                var keyWord = Prompts.PromptQuestion("Enter the keyword you want to look for (case sensitive)");
+                bool alertOnNotExist = Prompts.PromptYesNo($"Do you want the alert to trigger when this keyword doesn't exist?{Environment.NewLine} (if no then alert triggers when the keyword does exist)");
+                int intervalAnswer = Prompts.PromptMultipleChoice("Which interval would you like this tracker to check?",
+                    new string[]
                     {
                         "1 Min",
                         "5 Min"
                     });
-                int alertAnswer = UI.PromptMultipleChoice("Which alert type would you like to use?",
+                int alertAnswer = Prompts.PromptMultipleChoice("Which alert type would you like to use?",
                     new string[]
                     {
                         "Webhook",
@@ -260,12 +246,12 @@ namespace ArbitraryBot.FrontEnd
                 };
                 if (selectedAlert == Alert.Webhook)
                 {
-                    newTracker.WebHookURL = UI.PromptQuestion("Enter the webhook URL");
-                    newTracker.MentionString = UI.PromptQuestion($"Enter an ID of a user or role you want to mention{Environment.NewLine} (leave blank if you don't want a mention with the alert");
+                    newTracker.WebHookURL = Prompts.PromptQuestion("Enter the webhook URL");
+                    newTracker.MentionString = Prompts.PromptQuestion($"Enter an ID of a user or role you want to mention{Environment.NewLine} (leave blank if you don't want a mention with the alert");
                 }
                 else
                 {
-                    var emailString = UI.PromptQuestion("Enter a comma seperated list of emails to send an alert to");
+                    var emailString = Prompts.PromptQuestion("Enter a comma seperated list of emails to send an alert to");
                     newTracker.Emails = new List<string>();
                     foreach (var email in emailString)
                     {
@@ -282,102 +268,6 @@ namespace ArbitraryBot.FrontEnd
             Log.Information("Exited Menu AddWatcher");
         }
 
-        private static int PromptMultipleChoice(string question, string[] choices, bool validate = false)
-        {
-            Log.Debug("Asking PromptMultipleChoice [q]{Question} [c]{Choices}", question, choices);
-            bool answered = false;
-            int retAnswer = 0;
-            while (!answered)
-            {
-                var counter = 1;
-                Console.WriteLine($"{question}: ");
-                foreach (var choice in choices)
-                {
-                    Console.WriteLine($"   {counter}. {choice}");
-                    counter++;
-                }
-                Console.Write($"{Environment.NewLine}Option: ");
-                string answer = Console.ReadLine();
-                if (!int.TryParse(answer, out int intAnswer))
-                {
-                    Log.Debug("Menu answer entered was an invalid response: {Answer}", answer);
-                    Console.WriteLine("Answer wasn't invalid, please press enter and try again");
-                    Console.ReadLine();
-                }
-                else if (intAnswer <= 0 || intAnswer > choices.Count())
-                {
-                    Log.Debug("Menu answer entered was an invalid response: {Answer}", intAnswer);
-                    Console.WriteLine("Answer wasn't invalid, please press enter and try again");
-                    Console.ReadLine();
-                }
-                else
-                {
-                    if (validate)
-                    {
-                        Console.Write($"You chose: {choices[intAnswer - 1]}{Environment.NewLine}Is this correct?  [y/n] ");
-                        var bAnswer = Console.ReadLine().ToLower();
-                        if (bAnswer != "y" && bAnswer != "n")
-                        {
-                            Log.Debug("Answer was invalid: {Answer}", answer);
-                            Console.WriteLine("You entered an invalid response, please try again");
-                        }
-                        else if (bAnswer == "n")
-                        {
-                            Log.Debug("Answer was no, asking again: {Answer}", bAnswer);
-                        }
-                        else
-                        {
-                            retAnswer = intAnswer;
-                            answered = true;
-                        }
-                    }
-                    else
-                    {
-                        retAnswer = intAnswer;
-                        answered = true;
-                    }
-                }
-            }
-            Log.Information("PromptMultipleChoice answered: {Answer}", retAnswer);
-            return retAnswer;
-        }
-
-        private static string PromptQuestion(string question, bool validate = false)
-        {
-            Log.Debug("Asking PromptQuestion: {Question}", question);
-            bool answered = false;
-            string answer = "";
-            while (!answered)
-            {
-                Console.Write($"{question}: ");
-                answer = Console.ReadLine();
-                if (validate)
-                {
-                    Console.Write($"You entered: {answer}{Environment.NewLine}Is this correct?  [y/n] ");
-                    var bAnswer = Console.ReadLine().ToLower();
-                    if (bAnswer != "y" && bAnswer != "n")
-                    {
-                        Log.Debug("Answer was invalid: {Answer}", answer);
-                        Console.WriteLine("You entered an invalid response, please try again");
-                    }
-                    else if (bAnswer == "n")
-                    {
-                        Log.Debug("Answer was no, asking again: {Answer}", bAnswer);
-                    }
-                    else
-                    {
-                        answered = true;
-                    }
-                }
-                else
-                {
-                    answered = true;
-                }
-            }
-            Log.Information("PromptQuestion answered", answer);
-            return answer;
-        }
-
         internal static void DisplayHostInfo()
         {
             Log.Debug("Displaying host info");
@@ -391,35 +281,6 @@ namespace ArbitraryBot.FrontEnd
                 $"Logging Path:            {Constants.PathLogs}{Environment.NewLine}" +
                 $"Config Path:             {Constants.PathConfigDefault}{Environment.NewLine}");
             Log.Information("Host info Displayed");
-        }
-        internal static bool PromptYesNo(string question)
-        {
-            Log.Debug("Asking PromptYesNo: {Question}", question);
-            bool answered = false;
-            string answer = "";
-            while (!answered)
-            {
-                Console.Write($"{question} [y/n]? ");
-                answer = Console.ReadLine().ToLower();
-                if (answer != "y" && answer != "n")
-                {
-                    Log.Debug("Answer was invalid: {Answer}", answer);
-                    Console.WriteLine("You entered an invalid response, please try again");
-                }
-                else
-                {
-                    answered = true;
-                }
-            }
-            Log.Information("Prompt YesNo answered: {Answer}", answer);
-            if (answer == "y")
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
         }
     }
 }

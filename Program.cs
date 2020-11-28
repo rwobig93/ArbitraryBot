@@ -24,8 +24,6 @@ namespace ArbitraryBot
 
             Core.StartServices();
 
-            UI.DisplayHostInfo();
-
             UI.ShowMenuRoot();
 
             Handler.CatchAppClose();

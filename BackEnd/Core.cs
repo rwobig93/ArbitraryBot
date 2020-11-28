@@ -142,7 +142,7 @@ namespace ArbitraryBot.BackEnd
             }
             else
             {
-                Constants.LogLevelConsole.MinimumLevel = logLevel;
+                Constants.LogLevelCloud.MinimumLevel = logLevel;
             }
         }
 

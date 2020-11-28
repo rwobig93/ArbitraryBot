@@ -10,6 +10,7 @@ namespace ArbitraryBot.Shared
     {
         public Guid TrackerID { get; } = new Guid();
         public string FriendlyName { get; set; }
+        public bool Triggered { get; set; } = false;
         public string PageURL { get; set; }
         public string Keyword { get; set; }
         public bool AlertOnKeywordNotExist { get; set; } = true;

@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using ArbitraryBot.Shared;
-using Nito.AsyncEx.Synchronous;
 using Serilog;
 
 namespace ArbitraryBot.BackEnd
@@ -20,57 +19,88 @@ namespace ArbitraryBot.BackEnd
                 case TrackInterval.OneMin:
                     foreach (TrackedProduct tracker in Constants.SavedData.TrackedProducts1Min)
                     {
-                        var task = ProcessAlertNeedOnTracker(tracker);
-                        var result = task.WaitAndUnwrapException();
-                        Log.Verbose("Tracker Response: {TrackerResponse}", result);
+                        if (tracker.Enabled)
+                        {
+                            Log.Information("Attempting to Run 1min Process");
+                            ProcessAlertNeedOnTracker(tracker);
+                            Log.Information("Successfully Ran 1min Process");
+                        }
                     }
                     break;
                 case TrackInterval.FiveMin:
                     foreach (TrackedProduct tracker in Constants.SavedData.TrackedProducts5Min)
                     {
-                        var task = ProcessAlertNeedOnTracker(tracker);
-                        var result = task.WaitAndUnwrapException();
-                        Log.Verbose("Tracker Response: {TrackerResponse}", result);
+                        if (tracker.Enabled)
+                        {
+                            ProcessAlertNeedOnTracker(tracker);
+                        }
                     }
                     break;
             }
         }
 
-        public static async Task<string> ProcessAlertNeedOnTracker(TrackedProduct tracker)
+        public static async void ProcessAlertNeedOnTracker(TrackedProduct tracker)
         {
             try
             {
                 Log.Verbose("Processing alert for tracker", tracker);
-                using (HttpClient client = new HttpClient())
+                bool keywordFound = (await Communication.DoesKeywordExistOnWebpage(tracker.PageURL, tracker.Keyword)).KeywordExists;
+
+                if ((keywordFound && !tracker.AlertOnKeywordNotExist) || (!keywordFound && tracker.AlertOnKeywordNotExist))
                 {
-                    var response = await client.GetAsync(tracker.PageURL);
-                    var contents = await response.Content.ReadAsStringAsync();
-                    bool keywordFound = contents.Contains(tracker.Keyword);
-                    if ((keywordFound && !tracker.AlertOnKeywordNotExist) || (!keywordFound && tracker.AlertOnKeywordNotExist))
+                    if (!tracker.Triggered)
                     {
                         Log.Debug("Alerting on tracker as logic matches", tracker, keywordFound);
                         ProcessAlertToSend(tracker);
                     }
-                    return contents;
+                }
+                else
+                {
+                    if (tracker.Triggered)
+                    {
+                        Log.Debug("Alerting on tracker as logic matches", tracker, keywordFound);
+                        ProcessAlertToReset(tracker);
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Error occured when attempting to process alerting for tracker");
-                return "";
             }
         }
 
         public static void ProcessAlertToSend(TrackedProduct tracker)
         {
             Log.Debug("Processing Alert Type", tracker.AlertType);
+            tracker.Triggered = true;
             switch (tracker.AlertType)
             {
                 case Alert.Email:
                     Communication.SendAlertEmail(tracker);
                     break;
                 case Alert.Webhook:
-                    Communication.SendAlertWebhookDiscord(tracker);
+                    Communication.SendAlertWebhookDiscord(tracker, _color: "2813191");
+                    break;
+                case Alert.Email_Webhook:
+                    Log.Warning("Processed Alert Type Webhook + Email when it isn't implemented yet", tracker);
+                    break;
+            }
+        }
+
+        public static void ProcessAlertToReset(TrackedProduct tracker)
+        {
+            Log.Debug("Processing Alert Type", tracker.AlertType);
+            tracker.Triggered = false;
+            var msg = $"Alert has cleared for the following page:{Environment.NewLine}{tracker.PageURL}";
+            var title = "Alert has been reset on the following tracker, back to waiting :cry:";
+            var color = "15730439";
+            switch (tracker.AlertType)
+            {
+                case Alert.Email:
+                    Communication.SendAlertEmail(tracker);
+                    break;
+                case Alert.Webhook:
+                    Communication.SendAlertWebhookDiscord(tracker, title, msg, color);
                     break;
                 case Alert.Email_Webhook:
                     Log.Warning("Processed Alert Type Webhook + Email when it isn't implemented yet", tracker);
