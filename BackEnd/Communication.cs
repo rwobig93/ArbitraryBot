@@ -19,7 +19,7 @@ namespace ArbitraryBot.BackEnd
             throw new NotImplementedException();
         }
 
-        internal static void SendAlertWebhookDiscord(TrackedProduct tracker, string _title = null, string _msg = null, string _color = "0af5ed")
+        internal static void SendAlertWebhookDiscord(TrackedProduct tracker, string _title = null, string _msg = null, string _color = "718317")
         {
             try
             {
@@ -30,10 +30,6 @@ namespace ArbitraryBot.BackEnd
                 if (_msg == null)
                 {
                     _msg = $"Alerting on tracker for the following page:{Environment.NewLine}{tracker.PageURL}";
-                }
-                if (!string.IsNullOrWhiteSpace(tracker.MentionString))
-                {
-                    _msg = $"{tracker.MentionString} {_msg}";
                 }
                 string jsonSend = JsonConvert.SerializeObject(new
                 {
@@ -47,7 +43,8 @@ namespace ArbitraryBot.BackEnd
                             title = _title,
                             color = _color
                         }
-                    }
+                    },
+                    content = $"<@&{tracker.MentionString}>"
                 });
 
                 Log.Debug("Attempting to send webhook", tracker, jsonSend);

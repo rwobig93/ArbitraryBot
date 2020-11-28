@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using ArbitraryBot.Shared;
+using Nito.AsyncEx.Synchronous;
 using Serilog;
 
 namespace ArbitraryBot.BackEnd
@@ -13,37 +14,50 @@ namespace ArbitraryBot.BackEnd
     {
         public static void CheckOnTrackers(TrackInterval interval)
         {
+            Log.Information("Running Tracker Check: {Interval}", interval);
             switch (interval)
             {
                 case TrackInterval.OneMin:
                     foreach (TrackedProduct tracker in Constants.SavedData.TrackedProducts1Min)
                     {
-                        ProcessAlertNeedOnTracker(tracker);
+                        var task = ProcessAlertNeedOnTracker(tracker);
+                        var result = task.WaitAndUnwrapException();
+                        Log.Verbose("Tracker Response: {TrackerResponse}", result);
                     }
                     break;
                 case TrackInterval.FiveMin:
+                    foreach (TrackedProduct tracker in Constants.SavedData.TrackedProducts5Min)
+                    {
+                        var task = ProcessAlertNeedOnTracker(tracker);
+                        var result = task.WaitAndUnwrapException();
+                        Log.Verbose("Tracker Response: {TrackerResponse}", result);
+                    }
                     break;
             }
         }
 
-        public static async void ProcessAlertNeedOnTracker(TrackedProduct tracker)
+        public static async Task<string> ProcessAlertNeedOnTracker(TrackedProduct tracker)
         {
             try
             {
                 Log.Verbose("Processing alert for tracker", tracker);
-                HttpClient client = new HttpClient();
-                var response = await client.GetAsync(tracker.PageURL);
-                var contents = await response.Content.ReadAsStringAsync();
-                bool keywordFound = contents.Contains(tracker.Keyword);
-                if ((keywordFound && !tracker.AlertOnKeywordNotExist) || (!keywordFound && tracker.AlertOnKeywordNotExist))
+                using (HttpClient client = new HttpClient())
                 {
-                    Log.Debug("Alerting on tracker as logic matches", tracker, keywordFound);
-                    ProcessAlertToSend(tracker);
+                    var response = await client.GetAsync(tracker.PageURL);
+                    var contents = await response.Content.ReadAsStringAsync();
+                    bool keywordFound = contents.Contains(tracker.Keyword);
+                    if ((keywordFound && !tracker.AlertOnKeywordNotExist) || (!keywordFound && tracker.AlertOnKeywordNotExist))
+                    {
+                        Log.Debug("Alerting on tracker as logic matches", tracker, keywordFound);
+                        ProcessAlertToSend(tracker);
+                    }
+                    return contents;
                 }
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Error occured when attempting to process alerting for tracker");
+                return "";
             }
         }
 
@@ -69,7 +83,7 @@ namespace ArbitraryBot.BackEnd
             Log.Debug("Processing Alert Type For Testing", tracker.AlertType);
             string title = "Testing alert on the following tracker, Get Pumped!";
             string msg = $"Testing tracker for the following page: {Environment.NewLine}{tracker.PageURL}";
-            string color = "faf202";
+            string color = "16445954";
             switch (tracker.AlertType)
             {
                 case Alert.Email:

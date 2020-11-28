@@ -78,7 +78,7 @@ namespace ArbitraryBot.BackEnd
 
         public static void StartJobWatcherOneMin()
         {
-            RecurringJob.AddOrUpdate(() => Watcher.CheckOnTrackers(TrackInterval.OneMin), CronString.Minutely);
+            RecurringJob.AddOrUpdate(() => Watcher.CheckOnTrackers(TrackInterval.OneMin), Cron.Minutely);
         }
 
         public static void StartJobCleanup()

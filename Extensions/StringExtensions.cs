@@ -19,12 +19,18 @@ namespace ArbitraryBot.Extensions
             {
                 maxLength--;
             }
-            _string = _string.Substring(0, maxLength);
-            while (_string.Length < maxLength)
+            if (_string.Length > maxLength)
             {
-                _string += " ";
+                _string = _string.Substring(0, maxLength);
             }
-            return $"  {menuNumber}. {_string}|{Environment.NewLine}";
+            else
+            {
+                while (_string.Length < maxLength)
+                {
+                    _string += " ";
+                }
+            }
+            return $"|  {menuNumber}. {_string}|{Environment.NewLine}";
         }
     }
 }

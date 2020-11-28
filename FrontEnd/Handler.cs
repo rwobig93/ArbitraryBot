@@ -48,7 +48,10 @@ namespace ArbitraryBot.FrontEnd
 
         internal static void CloseApp()
         {
-            var answer = UI.PromptYesNo("Are you sure you want to close the bot?");
+            var answer = true;
+            #if !DEBUG
+            answer = UI.PromptYesNo("Are you sure you want to close the bot?");
+            #endif
             Log.Debug("Closing app called w/ an answer", answer, Constants.CloseApp);
             if (answer)
             {
@@ -97,31 +100,41 @@ namespace ArbitraryBot.FrontEnd
             }
         }
 
-        internal static string GetTrackersForMenu(string menu, int currentPage, out List<IEnumerable<TrackedProduct>> splitList)
+        /// <summary>
+        /// Return a string menu of enumerated tracker lists along w/ the combined paged list
+        /// </summary>
+        /// <param name="menu">The menu string we're adding to</param>
+        /// <param name="currentPage">The current page we're on</param>
+        /// <param name="splitList">The returned combined paged list of enumerated trackers</param>
+        /// <returns></returns>
+        internal static string GetTrackersForMenu(string menu, int currentPage, out List<List<TrackedProduct>> splitList)
         {
-            splitList = new List<IEnumerable<TrackedProduct>>();
-            var trackerOne = Constants.SavedData.TrackedProducts1Min;
-            var trackerFive = Constants.SavedData.TrackedProducts5Min;
+            splitList = new List<List<TrackedProduct>>();
+            int currentList = 0;
 
-            // Enumerate tracked product lists and combine into a single list
-            if (trackerOne.Count > 7)
+            // Add all tracker lists to one list for enumeration
+            List<List<TrackedProduct>> trackedLists = new List<List<TrackedProduct>>
             {
-                foreach (var trackerSplit in trackerOne.Split(
-                    (int)Math.Round((double)trackerOne.Count / 7)))
+                Constants.SavedData.TrackedProducts1Min,
+                Constants.SavedData.TrackedProducts5Min
+            };
+
+            // Enumerate tracked product lists and combine into a single list of paged trackers
+            splitList.Add(new List<TrackedProduct>());
+            foreach (var trackerList in trackedLists)
+            {
+                foreach (var tracker in trackerList)
                 {
-                    splitList.Add(trackerSplit);
-                }
-            }
-            else
-            {
-                // Add individuals
-            }
-            if (trackerFive.Count > 7)
-            {
-                foreach (var trackerSplit in trackerFive.Split(
-                    (int)Math.Round((double)trackerFive.Count / 7)))
-                {
-                    splitList.Add(trackerSplit);
+                    if (splitList[currentList].Count < 7)
+                    {
+                        splitList[currentList].Add(tracker);
+                    }
+                    else
+                    {
+                        currentList++;
+                        splitList.Add(new List<TrackedProduct>());
+                        splitList[currentList].Add(tracker);
+                    }
                 }
             }
 

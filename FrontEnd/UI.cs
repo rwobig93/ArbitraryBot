@@ -35,7 +35,7 @@ namespace ArbitraryBot.FrontEnd
                                 "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
                                 "{0}Option: ", Environment.NewLine);
                     var answer = Console.ReadLine();
-                    Log.Debug("Menu prompt answered", answer);
+                    Log.Debug("Menu prompt answered: {Answer}", answer);
                     if (!int.TryParse(answer, out int intAnswer))
                     {
                         Log.Debug("Menu answer entered was an invalid response");
@@ -44,7 +44,7 @@ namespace ArbitraryBot.FrontEnd
                     }
                     else
                     {
-                        Log.Debug("Valid menu option was entered", intAnswer);
+                        Log.Debug("Valid menu option was entered: {Answer}", intAnswer);
                         switch (intAnswer)
                         {
                             case 1:
@@ -81,6 +81,7 @@ namespace ArbitraryBot.FrontEnd
 
         private static void ShowMenuTestWatcherAlert()
         {
+            Console.Clear();
             bool menuClose = false;
             int currentPage = 1;
             Log.Debug("Presenting Menu TestWatcherAlert");
@@ -93,9 +94,9 @@ namespace ArbitraryBot.FrontEnd
                     "|                 Select the watcher alert you want to test:                |{0}" +
                     "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
                     "|  1. Back to Main Menu                                                     |{0}", Environment.NewLine);
-                List<IEnumerable<TrackedProduct>> trackerList = new List<IEnumerable<TrackedProduct>>();
+                List<List<TrackedProduct>> trackerList = new List<List<TrackedProduct>>();
                 menu = Handler.GetTrackersForMenu(menu, currentPage, out trackerList);
-                if (trackerList.Count <= 0)
+                if (trackerList[0].Count <= 0)
                 {
                     Console.WriteLine($"There currently aren't any trackers created!{Environment.NewLine}" +
                         $"Please create one before attempting to test");
@@ -107,9 +108,9 @@ namespace ArbitraryBot.FrontEnd
                     "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
                     "{0}Current Page: {1} " +
                     "{0}Option: ", Environment.NewLine, currentPage);
-                Console.WriteLine(menu);
+                Console.Write(menu);
                 var answer = Console.ReadLine();
-                Log.Debug("Menu prompt answered", answer);
+                Log.Debug("Menu prompt answered: {Answer}", answer);
                 if (!int.TryParse(answer, out int intAnswer))
                 {
                     Log.Debug("Menu answer entered was an invalid response");
@@ -118,24 +119,24 @@ namespace ArbitraryBot.FrontEnd
                 }
                 else
                 {
-                    Log.Debug("Valid menu option was entered", intAnswer);
+                    Log.Debug("Valid menu option was entered {Answer}", intAnswer);
                     var trackerPage = trackerList[currentPage - 1];
                     if (intAnswer == 1)
                     {
                         menuClose = true;
                     }
-                    else if (intAnswer > 0 && intAnswer <= trackerPage.Count())
+                    else if (intAnswer > 0 && intAnswer <= trackerPage.Count() + 1)
                     {
-                        var selectedTracker = trackerPage.ElementAt(intAnswer);
+                        var selectedTracker = trackerPage.ElementAt(intAnswer - 2);
                         Watcher.ProcessAlertToTest(selectedTracker);
                         Console.WriteLine($"Sent test alert for the tracker: {selectedTracker.FriendlyName}");
                         StopForMessage();
                     }
-                    else if (intAnswer > trackerPage.Count() && currentPage >= 2)
+                    else if (intAnswer > trackerPage.Count() + 1 && currentPage >= 2)
                     {
                         currentPage--;
                     }
-                    else if (intAnswer > trackerPage.Count() && currentPage < trackerList.Count)
+                    else if (intAnswer > trackerPage.Count() + 1 && currentPage < trackerList.Count)
                     {
                         currentPage++;
                     }
@@ -164,7 +165,7 @@ namespace ArbitraryBot.FrontEnd
                     "|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{0}" +
                     "{0}Option: ", Environment.NewLine);
                 var answer = Console.ReadLine();
-                Log.Debug("Menu prompt answered", answer);
+                Log.Debug("Menu prompt answered: {Answer}", answer);
                 if (!int.TryParse(answer, out int intAnswer))
                 {
                     Log.Debug("Menu answer entered was an invalid response");
@@ -173,7 +174,7 @@ namespace ArbitraryBot.FrontEnd
                 }
                 else
                 {
-                    Log.Debug("Valid menu option was entered", intAnswer);
+                    Log.Debug("Valid menu option was entered: {Answer}", intAnswer);
                     switch (intAnswer)
                     {
                         case 1:
@@ -260,7 +261,7 @@ namespace ArbitraryBot.FrontEnd
                 if (selectedAlert == Alert.Webhook)
                 {
                     newTracker.WebHookURL = UI.PromptQuestion("Enter the webhook URL");
-                    newTracker.MentionString = $"@&{UI.PromptQuestion($"Enter an ID of a user or role you want to mention{Environment.NewLine} (leave blank if you don't want a mention with the alert")}";
+                    newTracker.MentionString = UI.PromptQuestion($"Enter an ID of a user or role you want to mention{Environment.NewLine} (leave blank if you don't want a mention with the alert");
                 }
                 else
                 {
@@ -272,7 +273,7 @@ namespace ArbitraryBot.FrontEnd
                     }
                 }
                 Handler.SelectTrackerIntervalFromChoice(intervalAnswer, newTracker);
-                Log.Information("Created new tracker!", newTracker);
+                Log.Information("Created new tracker! {Tracker}", newTracker);
                 Console.Write($"Successfully created tracker! {Environment.NewLine}URL: {newTracker.PageURL}");
                 menuClose = true;
                 UI.StopForMessage();
@@ -283,7 +284,7 @@ namespace ArbitraryBot.FrontEnd
 
         private static int PromptMultipleChoice(string question, string[] choices, bool validate = false)
         {
-            Log.Debug("Asking PromptMultipleChoice", question, choices);
+            Log.Debug("Asking PromptMultipleChoice [q]{Question} [c]{Choices}", question, choices);
             bool answered = false;
             int retAnswer = 0;
             while (!answered)
@@ -299,13 +300,13 @@ namespace ArbitraryBot.FrontEnd
                 string answer = Console.ReadLine();
                 if (!int.TryParse(answer, out int intAnswer))
                 {
-                    Log.Debug("Menu answer entered was an invalid response", answer);
+                    Log.Debug("Menu answer entered was an invalid response: {Answer}", answer);
                     Console.WriteLine("Answer wasn't invalid, please press enter and try again");
                     Console.ReadLine();
                 }
                 else if (intAnswer <= 0 || intAnswer > choices.Count())
                 {
-                    Log.Debug("Menu answer entered was an invalid response", intAnswer);
+                    Log.Debug("Menu answer entered was an invalid response: {Answer}", intAnswer);
                     Console.WriteLine("Answer wasn't invalid, please press enter and try again");
                     Console.ReadLine();
                 }
@@ -317,12 +318,12 @@ namespace ArbitraryBot.FrontEnd
                         var bAnswer = Console.ReadLine().ToLower();
                         if (bAnswer != "y" && bAnswer != "n")
                         {
-                            Log.Debug("Answer was invalid", answer);
+                            Log.Debug("Answer was invalid: {Answer}", answer);
                             Console.WriteLine("You entered an invalid response, please try again");
                         }
                         else if (bAnswer == "n")
                         {
-                            Log.Debug("Answer was no, asking again", bAnswer);
+                            Log.Debug("Answer was no, asking again: {Answer}", bAnswer);
                         }
                         else
                         {
@@ -337,13 +338,13 @@ namespace ArbitraryBot.FrontEnd
                     }
                 }
             }
-            Log.Information($"PromptMultipleChoice answered", retAnswer);
+            Log.Information("PromptMultipleChoice answered: {Answer}", retAnswer);
             return retAnswer;
         }
 
         private static string PromptQuestion(string question, bool validate = false)
         {
-            Log.Debug("Asking PromptQuestion", question);
+            Log.Debug("Asking PromptQuestion: {Question}", question);
             bool answered = false;
             string answer = "";
             while (!answered)
@@ -356,12 +357,12 @@ namespace ArbitraryBot.FrontEnd
                     var bAnswer = Console.ReadLine().ToLower();
                     if (bAnswer != "y" && bAnswer != "n")
                     {
-                        Log.Debug("Answer was invalid", answer);
+                        Log.Debug("Answer was invalid: {Answer}", answer);
                         Console.WriteLine("You entered an invalid response, please try again");
                     }
                     else if (bAnswer == "n")
                     {
-                        Log.Debug("Answer was no, asking again", bAnswer);
+                        Log.Debug("Answer was no, asking again: {Answer}", bAnswer);
                     }
                     else
                     {
@@ -393,7 +394,7 @@ namespace ArbitraryBot.FrontEnd
         }
         internal static bool PromptYesNo(string question)
         {
-            Log.Debug("Asking PromptYesNo", question);
+            Log.Debug("Asking PromptYesNo: {Question}", question);
             bool answered = false;
             string answer = "";
             while (!answered)
@@ -402,7 +403,7 @@ namespace ArbitraryBot.FrontEnd
                 answer = Console.ReadLine().ToLower();
                 if (answer != "y" && answer != "n")
                 {
-                    Log.Debug("Answer was invalid", answer);
+                    Log.Debug("Answer was invalid: {Answer}", answer);
                     Console.WriteLine("You entered an invalid response, please try again");
                 }
                 else
@@ -410,7 +411,7 @@ namespace ArbitraryBot.FrontEnd
                     answered = true;
                 }
             }
-            Log.Information("Prompt YesNo answered", answer);
+            Log.Information("Prompt YesNo answered: {Answer}", answer);
             if (answer == "y")
             {
                 return true;
