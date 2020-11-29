@@ -105,6 +105,8 @@ namespace ArbitraryBot.BackEnd
                             {
                                 keywordFound = stream.Contains(keyword);
                             }
+                            Log.Verbose("Webpage Compressed:   {WebpageCompressed}", stream);
+                            Log.Verbose("Webpage Uncompressed: {WebpageUncompressed}", stream);
                             return new WebCheck()
                             {
                                 KeywordExists = keywordFound,

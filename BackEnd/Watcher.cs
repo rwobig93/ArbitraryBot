@@ -92,7 +92,7 @@ namespace ArbitraryBot.BackEnd
             Log.Debug("Processing Alert Type", tracker.AlertType);
             tracker.Triggered = false;
             var msg = $"Alert has cleared for the following page:{Environment.NewLine}{tracker.PageURL}";
-            var title = "Alert has been reset on the following tracker, back to waiting :cry:";
+            var title = $"Alert has cleared for the {tracker.FriendlyName}, back to waiting :cry:";
             var color = "15730439";
             switch (tracker.AlertType)
             {

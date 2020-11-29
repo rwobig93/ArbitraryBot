@@ -25,17 +25,23 @@ namespace ArbitraryBot.FrontEnd
                 if (arg.ToLower() == "-debug")
                 {
                     Core.ChangeLoggingLevelLocal(Serilog.Events.LogEventLevel.Debug);
-                    Log.Debug("Launch arg was -debug, changed local logging to debug", arg);
+                    Log.Debug("Launch arg was {Arg}, changed local logging to debug", arg);
                 }
                 if (arg.ToLower() == "-debugconsole")
                 {
                     Core.ChangeLoggingLevelConsole(Serilog.Events.LogEventLevel.Debug);
-                    Log.Debug("Launch arg was -debugconsole, changed console logging to debug", arg);
+                    Log.Debug("Launch arg was {Arg}, changed console logging to debug", arg);
                 }
                 if (arg.ToLower() == "-debugcloud")
                 {
                     Core.ChangeLoggingLevelCloud(Serilog.Events.LogEventLevel.Debug);
-                    Log.Debug("Launch arg was -debugcloud, changed cloud logging to debug", arg);
+                    Log.Debug("Launch arg was {Arg}, changed cloud logging to debug", arg);
+                }
+                if (arg.ToLower() == "-verbose")
+                {
+                    Core.ChangeLoggingLevelLocal(Serilog.Events.LogEventLevel.Verbose);
+                    Core.ChangeLoggingLevelCloud(Serilog.Events.LogEventLevel.Verbose);
+                    Log.Debug("Launch arg was {Arg}, changed cloud & local logging to verbose", arg);
                 }
             }
         }
