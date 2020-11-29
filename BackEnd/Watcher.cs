@@ -111,8 +111,8 @@ namespace ArbitraryBot.BackEnd
         public static void ProcessAlertToTest(TrackedProduct tracker)
         {
             Log.Debug("Processing Alert Type For Testing", tracker.AlertType);
-            string title = "Testing alert on the following tracker, Get Pumped!";
-            string msg = $"Testing tracker for the following page: {Environment.NewLine}{tracker.PageURL}";
+            string title = $"Testing alert on the the {tracker.FriendlyName} tracker, Get Pumped!";
+            string msg = $"Testing the tracker for the following page: {Environment.NewLine}{tracker.PageURL}";
             string color = "16445954";
             switch (tracker.AlertType)
             {

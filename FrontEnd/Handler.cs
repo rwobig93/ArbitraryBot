@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using ArbitraryBot.BackEnd;
 using ArbitraryBot.Extensions;
 using ArbitraryBot.Shared;
@@ -121,7 +115,7 @@ namespace ArbitraryBot.FrontEnd
             {
                 foreach (TrackedProduct tracker in splitList[currentPage - 1])
                 {
-                    menu += tracker.FriendlyName.ConvertToMenuOption(menuNum);
+                    menu += $"[{tracker.AlertInterval}] {tracker.FriendlyName}".ConvertToMenuOption(menuNum);
                     menuNum++;
                 }
                 if (currentPage >= 2)

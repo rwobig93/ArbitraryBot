@@ -363,6 +363,7 @@ namespace ArbitraryBot.FrontEnd
                 $"Logging Path:            {Constants.PathLogs}{Environment.NewLine}" +
                 $"Config Path:             {Constants.PathConfigDefault}{Environment.NewLine}");
             Log.Information("Host info Displayed");
+            StopForMessage();
         }
     }
 }

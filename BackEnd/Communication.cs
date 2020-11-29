@@ -28,11 +28,11 @@ namespace ArbitraryBot.BackEnd
             {
                 if (_title == null)
                 {
-                    _title = "Keyword alert on the following tracker, Go Go Go!";
+                    _title = $"Keyword alert {tracker.FriendlyName}, Go Go Go!";
                 }
                 if (_msg == null)
                 {
-                    _msg = $"Alerting on tracker for the following page:{Environment.NewLine}{tracker.PageURL}";
+                    _msg = $"Alerting on the tracker for the following page:{Environment.NewLine}{tracker.PageURL}";
                 }
                 string jsonSend = JsonConvert.SerializeObject(new
                 {

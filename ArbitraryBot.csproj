@@ -6,6 +6,9 @@
     <StartupObject>ArbitraryBot.Program</StartupObject>
     <Authors>Richard Wobig</Authors>
     <Company>Wobigtech</Company>
+    <ApplicationIcon>ArbitraryBot_Icon.ico</ApplicationIcon>
+    <Version>1.0.0.0</Version>
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
