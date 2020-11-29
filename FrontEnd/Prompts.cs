@@ -243,5 +243,84 @@ namespace ArbitraryBot.FrontEnd
                 return false;
             }
         }
+
+        internal static int PromptMenuTrackerProperties(string menuName, string description)
+        {
+            Console.Clear();
+            Log.Debug("Displaying MenuTrackerProps: {MenuTitle}", menuName);
+            var validAnswer = false;
+            int intAnswer = 0;
+            while (!validAnswer)
+            {
+                var menu = PromptMenuAction(menuName, description, false);
+                string[] choices = new string[]
+                {
+                    "Back to Previous Menu",
+                    "Friendly Name",
+                    "Page URL",
+                    "Keyword",
+                    "Alert when keyword doesn't exist",
+                    "Enabled",
+                    "Alert Settings",
+                    "Display Current Property Values"
+                };
+
+                int choiceNum = 1;
+                foreach (var choice in choices)
+                {
+                    menu += choice.ConvertToMenuOption(choiceNum);
+                    choiceNum++;
+                }
+                menu = menu.AddSeperatorTilde();
+                menu += $"{Environment.NewLine}Option: ";
+                Console.Write(menu);
+                var answer = Console.ReadLine();
+                Log.Debug("Menu prompt answered: {Answer}", answer);
+                if (!int.TryParse(answer, out intAnswer))
+                {
+                    Log.Debug("Menu answer entered was an invalid response");
+                    Console.WriteLine("Answer wasn't invalid, please press enter and try again");
+                    Console.ReadLine();
+                }
+                else
+                {
+                    validAnswer = true;
+                }
+            }
+            Log.Debug("Valid menu option was entered: {Answer}", intAnswer);
+            return intAnswer;
+        }
+
+        internal static void PromptWatcherAlertType(TrackedProduct tracker)
+        {
+            int intervalAnswer = Prompts.PromptMultipleChoice("Which interval would you like this tracker to check?",
+                new string[]
+                {
+                        "1 Min",
+                        "5 Min"
+                });
+            tracker.AlertInterval = Handler.SelectAlertIntervalFromChoice(intervalAnswer);
+            int alertAnswer = Prompts.PromptMultipleChoice("Which alert type would you like to use?",
+                new string[]
+                {
+                        "Webhook",
+                        "Email"
+                });
+            tracker.AlertType = Handler.SelectAlertFromChoice(alertAnswer);
+            if (tracker.AlertType == Alert.Webhook)
+            {
+                tracker.WebHookURL = Prompts.PromptQuestion("Enter the webhook URL");
+                tracker.MentionString = Prompts.PromptQuestion($"Enter an ID of a user or role you want to mention{Environment.NewLine} (leave blank if you don't want a mention with the alert");
+            }
+            else
+            {
+                var emailString = Prompts.PromptQuestion("Enter a comma seperated list of emails to send an alert to");
+                tracker.Emails = new List<string>();
+                foreach (var email in emailString)
+                {
+                    tracker.Emails.Add(email.ToString().Replace("\"", "").Trim());
+                }
+            }
+        }
     }
 }

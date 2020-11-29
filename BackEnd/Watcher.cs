@@ -65,7 +65,7 @@ namespace ArbitraryBot.BackEnd
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error occured when attempting to process alerting for tracker");
+                Log.Error(ex, "Error on tracker: [{Tracker}]{Error}", tracker.FriendlyName, ex.Message);
             }
         }
 

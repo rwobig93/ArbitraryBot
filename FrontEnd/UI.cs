@@ -31,6 +31,7 @@ namespace ArbitraryBot.FrontEnd
                         "Test Watcher Alert",
                         "Test Keyword On Website",
                         "Open Directory",
+                        "Display Host Info",
                         "Close Bot"
                     };
                     int answer = Prompts.PromptMenu(menuName, menuChoices, description);
@@ -53,6 +54,9 @@ namespace ArbitraryBot.FrontEnd
                             ShowMenuOpenDirectory();
                             break;
                         case 6:
+                            DisplayHostInfo();
+                            break;
+                        case 7:
                             Handler.CloseApp();
                             break;
                         default:
@@ -210,7 +214,112 @@ namespace ArbitraryBot.FrontEnd
 
         private static void ShowMenuModifyWatcher()
         {
-            throw new NotImplementedException();
+            bool menuClose = false;
+            int currentPage = 1;
+            while (!menuClose)
+            {
+                string menuName = "Modify Watcher";
+                string description = "Select the watcher you wish to modify:";
+                List<List<TrackedProduct>> trackerList = new List<List<TrackedProduct>>();
+                var answer = Prompts.PromptMenuTrackers(menuName, currentPage, out trackerList, description);
+                if (answer < 0)
+                {
+                    return;
+                }
+
+                var trackerPage = trackerList[currentPage - 1];
+                if (answer == 1)
+                {
+                    menuClose = true;
+                }
+                else if (answer > 0 && answer <= trackerPage.Count() + 1)
+                {
+                    var selectedTracker = trackerPage.ElementAt(answer - 2);
+                    ShowMenuModifySingleWatcher(selectedTracker);
+                }
+                else if (answer > trackerPage.Count() + 1 && currentPage >= 2)
+                {
+                    currentPage--;
+                }
+                else if (answer > trackerPage.Count() + 1 && currentPage < trackerList.Count)
+                {
+                    currentPage++;
+                }
+                Console.Clear();
+            }
+            Log.Information("Exited Menu ModifyWatcher");
+        }
+
+        private static void ShowMenuModifySingleWatcher(TrackedProduct selectedTracker)
+        {
+            Console.Clear();
+            bool menuClose = false;
+            while (!menuClose)
+            {
+                string menuName = $"Modify: {selectedTracker.FriendlyName}";
+                string description = "Select the property you wish to modify:";
+                var answer = Prompts.PromptMenuTrackerProperties(menuName, description);
+                
+                switch (answer)
+                {
+                    case 1:
+                        menuClose = true;
+                        break;
+                    case 2:
+                        selectedTracker.FriendlyName = Prompts.PromptQuestion("Enter a new Friendly Name");
+                        break;
+                    case 3:
+                        selectedTracker.PageURL = Prompts.PromptQuestion("Enter a new Page URL");
+                        break;
+                    case 4:
+                        selectedTracker.Keyword = Prompts.PromptQuestion("Enter a new keyword");
+                        break;
+                    case 5:
+                        selectedTracker.AlertOnKeywordNotExist = Prompts.PromptYesNo("Alert when keyword doesn't exist?");
+                        break;
+                    case 6:
+                        selectedTracker.Enabled = Prompts.PromptYesNo("Do you want this watcher enabled?");
+                        break;
+                    case 7:
+                        Prompts.PromptWatcherAlertType(selectedTracker);
+                        break;
+                    case 8:
+                        ShowWatcherProperties(selectedTracker);
+                        break;
+                    default:
+                        Log.Information("Answer entered wasn't a valid presented option");
+                        Console.WriteLine("Answer entered isn't one of the options, please press enter and try again");
+                        Console.ReadLine();
+                        break;
+                }
+                selectedTracker.Save();
+            }
+            Log.Information("Exited Menu ModifySingleWatcher");
+        }
+
+        private static void ShowWatcherProperties(TrackedProduct selectedTracker)
+        {
+            Console.Clear();
+            var menu = Prompts.PromptMenuAction("Watcher Properties", displayMenu: false);
+            menu += "FriendlyName".ConvertToMenuProperty(selectedTracker.FriendlyName);
+            menu += "PageURL".ConvertToMenuProperty(selectedTracker.PageURL);
+            menu += "Keyword".ConvertToMenuProperty(selectedTracker.Keyword);
+            menu += "AlertNoKeyword".ConvertToMenuProperty(selectedTracker.AlertOnKeywordNotExist.ToString());
+            menu += "Enabled".ConvertToMenuProperty(selectedTracker.Enabled.ToString());
+            menu += "AlertInterval".ConvertToMenuProperty(selectedTracker.AlertInterval.ToString());
+            menu += "AlertType".ConvertToMenuProperty(selectedTracker.AlertType.ToString());
+            if (selectedTracker.AlertType == Alert.Email)
+            {
+                menu += "Emails".ConvertToMenuProperty(selectedTracker.Emails.ToString());
+            }
+            else if (selectedTracker.AlertType == Alert.Webhook)
+            {
+                menu += "WebHookURL".ConvertToMenuProperty(selectedTracker.WebHookURL);
+                menu += "MentionString".ConvertToMenuProperty(selectedTracker.MentionString);
+            }
+            menu = menu.AddSeperatorTilde();
+            Console.Write(menu);
+            StopForMessage();
         }
 
         private static void ShowMenuAddWatcher()
@@ -223,42 +332,15 @@ namespace ArbitraryBot.FrontEnd
                 var pageURL = Prompts.PromptQuestion("Enter the page URL to monitor");
                 var keyWord = Prompts.PromptQuestion("Enter the keyword you want to look for (case sensitive)");
                 bool alertOnNotExist = Prompts.PromptYesNo($"Do you want the alert to trigger when this keyword doesn't exist?{Environment.NewLine} (if no then alert triggers when the keyword does exist)");
-                int intervalAnswer = Prompts.PromptMultipleChoice("Which interval would you like this tracker to check?",
-                    new string[]
-                    {
-                        "1 Min",
-                        "5 Min"
-                    });
-                int alertAnswer = Prompts.PromptMultipleChoice("Which alert type would you like to use?",
-                    new string[]
-                    {
-                        "Webhook",
-                        "Email"
-                    });
-                Alert selectedAlert = Handler.SelectAlertFromChoice(alertAnswer);
                 var newTracker = new TrackedProduct()
                 {
                     FriendlyName = friendlyName,
                     PageURL = pageURL,
                     Keyword = keyWord,
-                    AlertOnKeywordNotExist = alertOnNotExist,
-                    AlertType = selectedAlert
+                    AlertOnKeywordNotExist = alertOnNotExist
                 };
-                if (selectedAlert == Alert.Webhook)
-                {
-                    newTracker.WebHookURL = Prompts.PromptQuestion("Enter the webhook URL");
-                    newTracker.MentionString = Prompts.PromptQuestion($"Enter an ID of a user or role you want to mention{Environment.NewLine} (leave blank if you don't want a mention with the alert");
-                }
-                else
-                {
-                    var emailString = Prompts.PromptQuestion("Enter a comma seperated list of emails to send an alert to");
-                    newTracker.Emails = new List<string>();
-                    foreach (var email in emailString)
-                    {
-                        newTracker.Emails.Add(email.ToString().Replace("\"", "").Trim());
-                    }
-                }
-                Handler.SelectTrackerIntervalFromChoice(intervalAnswer, newTracker);
+                Prompts.PromptWatcherAlertType(newTracker);
+                newTracker.Save();
                 Log.Information("Created new tracker! {Tracker}", newTracker);
                 Console.Write($"Successfully created tracker! {Environment.NewLine}URL: {newTracker.PageURL}");
                 menuClose = true;

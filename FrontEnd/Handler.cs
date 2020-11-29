@@ -77,29 +77,6 @@ namespace ArbitraryBot.FrontEnd
             }
         }
 
-        internal static void SelectTrackerIntervalFromChoice(int intervalAnswer, TrackedProduct tracker)
-        {
-            switch (intervalAnswer)
-            {
-                case 1:
-                    Log.Debug("Adding tracker to 1min queue", tracker, intervalAnswer);
-                    tracker.AlertInterval = TrackInterval.OneMin;
-                    Constants.SavedData.TrackedProducts1Min.Add(tracker);
-                    Log.Information("Added tracker to 1min queue", tracker, intervalAnswer);
-                    break;
-                case 2:
-                    Log.Debug("Adding tracker to 5min queue", tracker, intervalAnswer);
-                    tracker.AlertInterval = TrackInterval.FiveMin;
-                    Constants.SavedData.TrackedProducts5Min.Add(tracker);
-                    Log.Information("Added tracker to 5min queue", tracker, intervalAnswer);
-                    break;
-                default:
-                    Log.Warning("Default was hit on a switch that shouldn't occur", tracker, intervalAnswer);
-                    Constants.SavedData.TrackedProducts5Min.Add(tracker);
-                    break;
-            }
-        }
-
         /// <summary>
         /// Return a string menu of enumerated tracker lists along w/ the combined paged list
         /// </summary>
@@ -159,6 +136,18 @@ namespace ArbitraryBot.FrontEnd
             }
 
             return menu;
+        }
+
+        internal static TrackInterval SelectAlertIntervalFromChoice(int intervalAnswer)
+        {
+            switch (intervalAnswer)
+            {
+                case 1:
+                    return TrackInterval.OneMin;
+                case 2:
+                    return TrackInterval.FiveMin;
+            }
+            return TrackInterval.FiveMin;
         }
     }
 }

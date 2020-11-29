@@ -8,7 +8,7 @@ namespace ArbitraryBot.Shared
 {
     public class TrackedProduct
     {
-        public Guid TrackerID { get; } = new Guid();
+        public Guid TrackerID { get; } = Guid.NewGuid();
         public string FriendlyName { get; set; }
         public bool Triggered { get; set; } = false;
         public string PageURL { get; set; }

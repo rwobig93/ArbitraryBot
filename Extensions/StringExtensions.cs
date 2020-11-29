@@ -46,6 +46,15 @@ namespace ArbitraryBot.Extensions
             return $"|{_string.PadLeft(padLeft, ' ').PadRight(lengthTotal, ' ')}|{Environment.NewLine}";
         }
 
+        public static string ConvertToMenuProperty(this string _string, string value, int propNameMax = 14)
+        {
+            if (_string.Length > propNameMax)
+            {
+                _string = _string.Substring(0, propNameMax);
+            }
+            return $"|{_string.PadLeft(1 + _string.Length, ' ').PadRight(propNameMax + 2)}: {value}{Environment.NewLine}";
+        }
+
         public static string AddSeperatorDashed(this string _string)
         {
             return _string += $"|  -----------------------------------------------------------------------  |{Environment.NewLine}";
