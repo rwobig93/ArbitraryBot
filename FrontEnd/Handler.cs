@@ -50,7 +50,7 @@ namespace ArbitraryBot.FrontEnd
         {
             var answer = true;
             #if !DEBUG
-            answer = UI.PromptYesNo("Are you sure you want to close the bot?");
+            answer = Prompts.PromptYesNo("Are you sure you want to close the bot?");
             #endif
             Log.Debug("Closing app called w/ an answer", answer, Constants.CloseApp);
             if (answer)
