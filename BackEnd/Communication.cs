@@ -17,6 +17,34 @@ namespace ArbitraryBot.BackEnd
 {
     public static class Communication
     {
+        public static HttpClient HttpClient { get; private set; }
+
+        public static void Initialize()
+        {
+            if (HttpClient == null)
+            {
+                HttpClient = new HttpClient();
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                Log.Debug("Initialized HttpClient");
+            }
+            else
+            {
+                Log.Warning("HttpClient isn't null but we're attempting to initialize anyway");
+            }
+        }
+
+        public static void Dispose()
+        {
+            if (HttpClient != null)
+            {
+                HttpClient.Dispose();
+            }
+            else
+            {
+                Log.Warning("HttpClient was already null but we're attempting to dispose anyway");
+            }
+        }
+
         internal static void SendAlertEmail(TrackedProduct tracker)
         {
             throw new NotImplementedException();
@@ -71,62 +99,82 @@ namespace ArbitraryBot.BackEnd
 
         internal static async Task<WebCheck> DoesKeywordExistOnWebpage(string pageURL, string keyword)
         {
-            using (HttpClient client = new HttpClient())
+            if (HttpClient == null)
             {
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                var uri = new Uri(pageURL);
-
-                using (var request = new HttpRequestMessage(HttpMethod.Get, uri))
-                {
-                    request.Headers.Add("Connection", "keep-alive");
-                    request.Headers.Add("Cache-Control", "max-age=0");
-                    request.Headers.Add("DNT", "1");
-                    request.Headers.Add("Upgrade-Insecure-Requests", "1");
-                    request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36");
-                    request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
-                    request.Headers.Add("Sec-Fetch-Site", "none");
-                    request.Headers.Add("Sec-Fetch-Mode", "navigate");
-                    request.Headers.Add("Sec-Fetch-User", "?1");
-                    request.Headers.Add("Sec-Fetch-Dest", "document");
-                    request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
-                    request.Headers.Add("Accept-Language", "en-US,en;q=0.9");
-
-                    using (var response = await client.SendAsync(request).ConfigureAwait(false))
-                    {
-                        response.EnsureSuccessStatusCode();
-                        var contents = await response.Content.ReadAsStringAsync();
-                        bool keywordFound = contents.Contains(keyword);
-                        using (var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                        using (var decompressedStream = new GZipStream(responseStream, CompressionMode.Decompress))
-                        using (var streamReader = new StreamReader(decompressedStream))
-                        {
-                            var stream = await streamReader.ReadToEndAsync();
-                            if (!keywordFound)
-                            {
-                                keywordFound = stream.Contains(keyword);
-                            }
-                            Log.Verbose("Webpage Compressed:   {WebpageCompressed}", stream);
-                            Log.Verbose("Webpage Uncompressed: {WebpageUncompressed}", stream);
-                            return new WebCheck()
-                            {
-                                KeywordExists = keywordFound,
-                                ResponseCode = response.StatusCode,
-                                WebpageContents = contents,
-                                DecompressedContents = stream
-                            };
-                        }
-                    }
-                }
+                Initialize();
             }
+            var uri = new Uri(pageURL);
+
+            using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            AddHttpHeaders(request);
+
+            using var response = await HttpClient.SendAsync(request).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+            var contents = await response.Content.ReadAsStringAsync();
+            bool keywordFound = contents.Contains(keyword);
+            using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var decompressedStream = new GZipStream(responseStream, CompressionMode.Decompress);
+            using var streamReader = new StreamReader(decompressedStream);
+            var stream = await streamReader.ReadToEndAsync();
+            if (!keywordFound)
+            {
+                keywordFound = stream.Contains(keyword);
+            }
+            Log.Verbose("Webpage Compressed:   {WebpageCompressed}", stream);
+            Log.Verbose("Webpage Uncompressed: {WebpageUncompressed}", stream);
+            return new WebCheck()
+            {
+                KeywordExists = keywordFound,
+                ResponseCode = response.StatusCode,
+                WebpageContents = contents,
+                DecompressedContents = stream
+            };
         }
 
-        internal static void ForceCanonicalPathAndQuery(Uri uri)
+        private static void AddHttpHeaders(HttpRequestMessage request)
         {
-            string paq = uri.PathAndQuery; // need to access PathAndQuery
-            FieldInfo flagsFieldInfo = typeof(Uri).GetField("m_Flags", BindingFlags.Instance | BindingFlags.NonPublic);
-            ulong flags = (ulong)flagsFieldInfo.GetValue(uri);
-            flags &= ~((ulong)0x30); // Flags.PathNotCanonical|Flags.QueryNotCanonical
-            flagsFieldInfo.SetValue(uri, flags);
+            Log.Verbose("Adding Http Headers");
+            request.Headers.Add("Connection", "keep-alive");
+            request.Headers.Add("Cache-Control", "max-age=0");
+            request.Headers.Add("DNT", "1");
+            request.Headers.Add("Upgrade-Insecure-Requests", "1");
+            request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36");
+            request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
+            request.Headers.Add("Sec-Fetch-Site", "none");
+            request.Headers.Add("Sec-Fetch-Mode", "navigate");
+            request.Headers.Add("Sec-Fetch-User", "?1");
+            request.Headers.Add("Sec-Fetch-Dest", "document");
+            request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
+            request.Headers.Add("Accept-Language", "en-US,en;q=0.9");
+            Log.Verbose("Finished Adding Http Headers");
+        }
+
+        internal static async Task<WebCheck> GetWebFileContents(string pageURL)
+        {
+            if (HttpClient == null)
+            {
+                Initialize();
+            }
+            var uri = new Uri(pageURL);
+
+            using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            AddHttpHeaders(request);
+
+            using var response = await HttpClient.SendAsync(request).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+            var contents = await response.Content.ReadAsStringAsync();
+            using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var decompressedStream = new GZipStream(responseStream, CompressionMode.Decompress);
+            using var streamReader = new StreamReader(decompressedStream);
+            var stream = await streamReader.ReadToEndAsync();
+            Log.Verbose("Webpage Compressed:   {WebpageCompressed}", stream);
+            Log.Verbose("Webpage Uncompressed: {WebpageUncompressed}", stream);
+            return new WebCheck()
+            {
+                ResponseCode = response.StatusCode,
+                WebpageContents = contents,
+                DecompressedContents = stream
+            };
         }
     }
 }

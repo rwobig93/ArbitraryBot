@@ -101,7 +101,7 @@ namespace ArbitraryBot.Shared
         {
             try
             {
-                string backupSaveDataFile = OSDynamic.GetFilePath(Constants.PathSavedData, $"SaveData_{DateTime.Now.ToString("yy-MM-dd-H-mm")}.json");
+                string backupSaveDataFile = OSDynamic.GetFilePath(Constants.PathSavedData, $"SaveData_{DateTime.Now:yy-MM-dd-H-mm}.json");
                 Save(backupSaveDataFile);
                 return StatusReturn.Success;
             }

@@ -12,41 +12,64 @@ namespace ArbitraryBot.Extensions
     {
         public static void Save(this TrackedProduct tracker)
         {
+            List<TrackedProduct> selectedList;
             TrackedProduct foundTracker;
             switch (tracker.AlertInterval)
             {
                 case TrackInterval.OneMin:
-                    Log.Debug("Adding or updating tracker on 1min queue: {Tracker}", tracker.FriendlyName);
-                    foundTracker = Constants.SavedData.TrackedProducts1Min.Find(x => x.TrackerID == tracker.TrackerID);
-                    if (foundTracker != null)
-                    {
-                        foundTracker = tracker;
-                        Log.Debug("Updated tracker on 1min queue: {Tracker}", tracker.FriendlyName);
-                    }
-                    else
-                    {
-                        Constants.SavedData.TrackedProducts1Min.Add(tracker);
-                        Log.Debug("Added tracker on 1min queue: {Tracker}", tracker.FriendlyName);
-                    }
+                    selectedList = Constants.SavedData.TrackedProducts1Min;
                     break;
                 case TrackInterval.FiveMin:
-                    Log.Debug("Adding or updating tracker on 5min queue: {Tracker}", tracker.FriendlyName);
-                    foundTracker = Constants.SavedData.TrackedProducts5Min.Find(x => x.TrackerID == tracker.TrackerID);
-                    if (foundTracker != null)
-                    {
-                        foundTracker = tracker;
-                        Log.Debug("Updated tracker on 5min queue: {Tracker}", tracker.FriendlyName);
-                    }
-                    else
-                    {
-                        Constants.SavedData.TrackedProducts5Min.Add(tracker);
-                        Log.Debug("Added tracker on 5min queue: {Tracker}", tracker.FriendlyName);
-                    }
+                    selectedList = Constants.SavedData.TrackedProducts5Min;
                     break;
                 default:
                     Log.Warning("Default was hit on a switch that shouldn't occur", tracker);
-                    Constants.SavedData.TrackedProducts5Min.Add(tracker);
+                    selectedList = Constants.SavedData.TrackedProducts5Min;
                     break;
+            }
+
+            Log.Debug("Adding or updating tracker on the {Interval} queue: {Tracker}", tracker.AlertInterval, tracker.FriendlyName);
+            foundTracker = selectedList.Find(x => x.TrackerID == tracker.TrackerID);
+            if (foundTracker != null)
+            {
+                foundTracker = tracker;
+                Log.Debug("Updated tracker on the {Interval} queue: {Tracker}", tracker.AlertInterval, tracker.FriendlyName);
+            }
+            else
+            {
+                Constants.SavedData.TrackedProducts1Min.Add(tracker);
+                Log.Debug("Added tracker on the {Interval} queue: {Tracker}", tracker.AlertInterval, tracker.FriendlyName);
+            }
+        }
+
+        public static void Delete(this TrackedProduct tracker)
+        {
+            List<TrackedProduct> selectedList;
+            TrackedProduct foundTracker;
+            switch (tracker.AlertInterval)
+            {
+                case TrackInterval.OneMin:
+                    selectedList = Constants.SavedData.TrackedProducts1Min;
+                    break;
+                case TrackInterval.FiveMin:
+                    selectedList = Constants.SavedData.TrackedProducts5Min;
+                    break;
+                default:
+                    Log.Warning("Default was hit on a switch that shouldn't occur", tracker);
+                    selectedList = Constants.SavedData.TrackedProducts5Min;
+                    break;
+            }
+
+            Log.Debug("Removing tracker on {Interval} queue: {Tracker}", tracker.AlertInterval, tracker.FriendlyName);
+            foundTracker = selectedList.Find(x => x.TrackerID == tracker.TrackerID);
+            if (foundTracker != null)
+            {
+                Log.Debug("Removed tracker on {Interval} queue: {Tracker}", tracker.AlertInterval, tracker.FriendlyName);
+                selectedList.Remove(foundTracker);
+            }
+            else
+            {
+                Log.Warning("Attempted to remove tracker on {Interval} queue: {Tracker} | Couldn't find the tracker", tracker.AlertInterval, tracker.FriendlyName);
             }
         }
     }

@@ -16,41 +16,37 @@ namespace ArbitraryBot.Shared
 
         public static FileType GetFileType(AppFile appFile)
         {
-            switch (appFile)
+            return appFile switch
             {
-                case AppFile.Config:
-                    return new FileType
-                    {
-                        AppFile = AppFile.Config,
-                        FilePrefix = "Config_",
-                        Directory = Constants.PathConfigDefault,
-                        RetentionDays = 7
-                    };
-                case AppFile.Log:
-                    return new FileType
-                    {
-                        AppFile = AppFile.Log,
-                        FilePrefix = OSDynamic.GetProductAssembly().ProductName,
-                        Directory = Constants.PathLogs,
-                        RetentionDays = 30
-                    };
-                case AppFile.SavedData:
-                    return new FileType
-                    {
-                        AppFile = AppFile.SavedData,
-                        FilePrefix = "SaveData_",
-                        Directory = Constants.PathSavedData,
-                        RetentionDays = 90
-                    };
-                default:
-                    return new FileType
-                    {
-                        AppFile = AppFile.Log,
-                        FilePrefix = OSDynamic.GetProductAssembly().ProductName,
-                        Directory = Constants.PathLogs,
-                        RetentionDays = 30
-                    };
-            }
+                AppFile.Config => new FileType
+                {
+                    AppFile = AppFile.Config,
+                    FilePrefix = "Config_",
+                    Directory = Constants.PathConfigDefault,
+                    RetentionDays = 7
+                },
+                AppFile.Log => new FileType
+                {
+                    AppFile = AppFile.Log,
+                    FilePrefix = OSDynamic.GetProductAssembly().ProductName,
+                    Directory = Constants.PathLogs,
+                    RetentionDays = 30
+                },
+                AppFile.SavedData => new FileType
+                {
+                    AppFile = AppFile.SavedData,
+                    FilePrefix = "SaveData_",
+                    Directory = Constants.PathSavedData,
+                    RetentionDays = 90
+                },
+                _ => new FileType
+                {
+                    AppFile = AppFile.Log,
+                    FilePrefix = OSDynamic.GetProductAssembly().ProductName,
+                    Directory = Constants.PathLogs,
+                    RetentionDays = 30
+                },
+            };
         }
     }
 }

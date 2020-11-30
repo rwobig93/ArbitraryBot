@@ -14,7 +14,6 @@ namespace ArbitraryBot.Shared
 {
     public class Config
     {
-        // Config goes here
 
         public static StatusReturn Load()
         {
@@ -103,7 +102,7 @@ namespace ArbitraryBot.Shared
 
         internal static void Backup()
         {
-            string backupConfigFile = OSDynamic.GetFilePath(Constants.PathSavedData,  $"Config_{DateTime.Now.ToString("yy-MM-dd-H-mm")}.json");
+            string backupConfigFile = OSDynamic.GetFilePath(Constants.PathSavedData,  $"Config_{DateTime.Now:yy-MM-dd-H-mm}.json");
             Save(backupConfigFile);
         }
     }

@@ -13,29 +13,25 @@ namespace ArbitraryBot.BackEnd
     {
         public static void CheckOnTrackers(TrackInterval interval)
         {
-            Log.Information("Running Tracker Check: {Interval}", interval);
-            switch (interval)
+            Log.Debug("Running Tracker Check: {Interval}", interval);
+            List<TrackedProduct> selectedList = interval switch
             {
-                case TrackInterval.OneMin:
-                    foreach (TrackedProduct tracker in Constants.SavedData.TrackedProducts1Min)
-                    {
-                        if (tracker.Enabled)
-                        {
-                            Log.Information("Attempting to Run 1min Process");
-                            ProcessAlertNeedOnTracker(tracker);
-                            Log.Information("Successfully Ran 1min Process");
-                        }
-                    }
-                    break;
-                case TrackInterval.FiveMin:
-                    foreach (TrackedProduct tracker in Constants.SavedData.TrackedProducts5Min)
-                    {
-                        if (tracker.Enabled)
-                        {
-                            ProcessAlertNeedOnTracker(tracker);
-                        }
-                    }
-                    break;
+                TrackInterval.OneMin => Constants.SavedData.TrackedProducts1Min,
+                TrackInterval.FiveMin => Constants.SavedData.TrackedProducts5Min,
+                _ => Constants.SavedData.TrackedProducts5Min,
+            };
+            foreach (TrackedProduct tracker in selectedList)
+            {
+                if (tracker.Enabled)
+                {
+                    Log.Verbose("Attempting to Run {Interval} Process: {Tracker}", interval, tracker.FriendlyName);
+                    ProcessAlertNeedOnTracker(tracker);
+                    Log.Verbose("Successfully Ran {Interval} Process: {Tracker}", interval, tracker.FriendlyName);
+                }
+                else
+                {
+                    Log.Verbose("Tracker {Tracker} is disabled, skipping it", tracker.FriendlyName);
+                }
             }
         }
 
@@ -45,22 +41,30 @@ namespace ArbitraryBot.BackEnd
             {
                 Log.Verbose("Processing alert for tracker", tracker);
                 bool keywordFound = (await Communication.DoesKeywordExistOnWebpage(tracker.PageURL, tracker.Keyword)).KeywordExists;
+                bool keywordValidation = (await Communication.DoesKeywordExistOnWebpage(tracker.PageURL, tracker.Keyword)).KeywordExists;
 
-                if ((keywordFound && !tracker.AlertOnKeywordNotExist) || (!keywordFound && tracker.AlertOnKeywordNotExist))
+                if (keywordFound == keywordValidation)
                 {
-                    if (!tracker.Triggered)
+                    if ((keywordFound && !tracker.AlertOnKeywordNotExist) || (!keywordFound && tracker.AlertOnKeywordNotExist))
                     {
-                        Log.Debug("Alerting on tracker as logic matches", tracker, keywordFound);
-                        ProcessAlertToSend(tracker);
+                        if (!tracker.Triggered)
+                        {
+                            Log.Debug("Alerting on tracker as logic matches", tracker, keywordFound);
+                            ProcessAlertToSend(tracker);
+                        }
+                    }
+                    else
+                    {
+                        if (tracker.Triggered)
+                        {
+                            Log.Debug("Alerting on tracker as logic matches", tracker, keywordFound);
+                            ProcessAlertToReset(tracker);
+                        }
                     }
                 }
                 else
                 {
-                    if (tracker.Triggered)
-                    {
-                        Log.Debug("Alerting on tracker as logic matches", tracker, keywordFound);
-                        ProcessAlertToReset(tracker);
-                    }
+                    Log.Verbose("Keyword found [{KWFound}] and Validation [{KWValidation}] don't match, not alerting", keywordFound, keywordValidation);
                 }
             }
             catch (Exception ex)

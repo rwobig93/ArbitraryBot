@@ -29,7 +29,6 @@ namespace ArbitraryBot.FrontEnd
                     Console.WriteLine($"There currently aren't any trackers created!{Environment.NewLine}" +
                         $"Please create one before attempting to test, press enter to continue");
                     Console.ReadLine();
-                    menuClose = true;
                     return -1;
                 }
                 menu = menu.AddSeperatorTilde();
@@ -141,7 +140,7 @@ namespace ArbitraryBot.FrontEnd
                     Console.WriteLine("Answer wasn't invalid, please press enter and try again");
                     Console.ReadLine();
                 }
-                else if (intAnswer <= 0 || intAnswer > choices.Count())
+                else if (intAnswer <= 0 || intAnswer > choices.Length)
                 {
                     Log.Debug("Menu answer entered was an invalid response: {Answer}", intAnswer);
                     Console.WriteLine("Answer wasn't invalid, please press enter and try again");
@@ -255,14 +254,15 @@ namespace ArbitraryBot.FrontEnd
                 var menu = PromptMenuAction(menuName, description, false);
                 string[] choices = new string[]
                 {
-                    "Back to Previous Menu",
-                    "Friendly Name",
-                    "Page URL",
-                    "Keyword",
-                    "Alert when keyword doesn't exist",
-                    "Enabled",
-                    "Alert Settings",
-                    "Display Current Property Values"
+                    "[<-] Back to Previous Menu",
+                    "[P]  Friendly Name",
+                    "[P]  Page URL",
+                    "[P]  Keyword",
+                    "[P]  Alert when keyword doesn't exist",
+                    "[P]  Enabled",
+                    "[P]  Alert Settings",
+                    "[D]  Display Current Property Values",
+                    "[X]  Delete Watcher"
                 };
 
                 int choiceNum = 1;

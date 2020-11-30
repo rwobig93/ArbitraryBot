@@ -12,6 +12,7 @@ namespace ArbitraryBot.FrontEnd
         {
             Core.SaveEverything();
             Jobs.StopJobService();
+            Communication.Dispose();
             Log.Information("==START-STOP== Application Stopped");
             Log.CloseAndFlush();
         }
@@ -140,14 +141,12 @@ namespace ArbitraryBot.FrontEnd
 
         internal static TrackInterval SelectAlertIntervalFromChoice(int intervalAnswer)
         {
-            switch (intervalAnswer)
+            return intervalAnswer switch
             {
-                case 1:
-                    return TrackInterval.OneMin;
-                case 2:
-                    return TrackInterval.FiveMin;
-            }
-            return TrackInterval.FiveMin;
+                1 => TrackInterval.OneMin,
+                2 => TrackInterval.FiveMin,
+                _ => TrackInterval.FiveMin,
+            };
         }
     }
 }

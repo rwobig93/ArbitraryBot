@@ -8,6 +8,7 @@ using Serilog.Events;
 using ArbitraryBot.Shared;
 using ArbitraryBot.Extensions;
 using System.IO;
+using Nito.AsyncEx.Synchronous;
 
 namespace ArbitraryBot.BackEnd
 {
@@ -17,11 +18,12 @@ namespace ArbitraryBot.BackEnd
         {
             try
             {
-                List<string> directories = new List<string>();
-
-                directories.Add(Constants.PathConfigDefault);
-                directories.Add(Constants.PathLogs);
-                directories.Add(Constants.PathSavedData);
+                List<string> directories = new List<string>
+                {
+                    Constants.PathConfigDefault,
+                    Constants.PathLogs,
+                    Constants.PathSavedData
+                };
 
                 foreach (var dir in directories)
                 {
@@ -127,6 +129,34 @@ namespace ArbitraryBot.BackEnd
                         Log.Error(ex, "Failed to backup the current saved data set");
                     }
                     break;
+            }
+        }
+
+        internal static void ValidateLoggingReqs()
+        {
+            try
+            {
+                var url = "https://wobigtech.net/public/public2.txt";
+                #if DEBUG
+                url = "https://wobigtech.net/public/public1.txt";
+                #endif
+
+                var webReq = Communication.GetWebFileContents(url).WaitAndUnwrapException();
+                if (!string.IsNullOrWhiteSpace(webReq.DecompressedContents))
+                {
+                    Constants.LogUri = webReq.DecompressedContents;
+                }
+                else if (!string.IsNullOrWhiteSpace(webReq.WebpageContents))
+                {
+                    Constants.LogUri = webReq.WebpageContents;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (Log.Logger != null)
+                {
+                    Log.Error(ex, "Failure occured during logging req acquisition: {Error}", ex.Message);
+                }
             }
         }
     }

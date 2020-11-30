@@ -124,8 +124,7 @@ namespace ArbitraryBot.FrontEnd
             {
                 string menuName = "Test Watcher Alert";
                 string description = "Select the watcher alert you want to test:";
-                List<List<TrackedProduct>> trackerList = new List<List<TrackedProduct>>();
-                var answer = Prompts.PromptMenuTrackers(menuName, currentPage, out trackerList, description);
+                var answer = Prompts.PromptMenuTrackers(menuName, currentPage, out List<List<TrackedProduct>> trackerList, description);
                 if (answer < 0)
                 {
                     return;
@@ -136,18 +135,18 @@ namespace ArbitraryBot.FrontEnd
                 {
                     menuClose = true;
                 }
-                else if (answer > 0 && answer <= trackerPage.Count() + 1)
+                else if (answer > 0 && answer <= trackerPage.Count + 1)
                 {
                     var selectedTracker = trackerPage.ElementAt(answer - 2);
                     Watcher.ProcessAlertToTest(selectedTracker);
                     Console.WriteLine($"Sent test alert for the tracker: {selectedTracker.FriendlyName}");
                     StopForMessage();
                 }
-                else if (answer > trackerPage.Count() + 1 && currentPage >= 2)
+                else if (answer > trackerPage.Count + 1 && currentPage >= 2)
                 {
                     currentPage--;
                 }
-                else if (answer > trackerPage.Count() + 1 && currentPage < trackerList.Count)
+                else if (answer > trackerPage.Count + 1 && currentPage < trackerList.Count)
                 {
                     currentPage++;
                 }
@@ -220,8 +219,7 @@ namespace ArbitraryBot.FrontEnd
             {
                 string menuName = "Modify Watcher";
                 string description = "Select the watcher you wish to modify:";
-                List<List<TrackedProduct>> trackerList = new List<List<TrackedProduct>>();
-                var answer = Prompts.PromptMenuTrackers(menuName, currentPage, out trackerList, description);
+                var answer = Prompts.PromptMenuTrackers(menuName, currentPage, out List<List<TrackedProduct>> trackerList, description);
                 if (answer < 0)
                 {
                     return;
@@ -232,16 +230,16 @@ namespace ArbitraryBot.FrontEnd
                 {
                     menuClose = true;
                 }
-                else if (answer > 0 && answer <= trackerPage.Count() + 1)
+                else if (answer > 0 && answer <= trackerPage.Count + 1)
                 {
                     var selectedTracker = trackerPage.ElementAt(answer - 2);
                     ShowMenuModifySingleWatcher(selectedTracker);
                 }
-                else if (answer > trackerPage.Count() + 1 && currentPage >= 2)
+                else if (answer > trackerPage.Count + 1 && currentPage >= 2)
                 {
                     currentPage--;
                 }
-                else if (answer > trackerPage.Count() + 1 && currentPage < trackerList.Count)
+                else if (answer > trackerPage.Count + 1 && currentPage < trackerList.Count)
                 {
                     currentPage++;
                 }
@@ -259,6 +257,7 @@ namespace ArbitraryBot.FrontEnd
                 string menuName = $"Modify: {selectedTracker.FriendlyName}";
                 string description = "Select the property you wish to modify:";
                 var answer = Prompts.PromptMenuTrackerProperties(menuName, description);
+                bool removeWatcher = false;
                 
                 switch (answer)
                 {
@@ -286,13 +285,23 @@ namespace ArbitraryBot.FrontEnd
                     case 8:
                         ShowWatcherProperties(selectedTracker);
                         break;
+                    case 9:
+                        removeWatcher = Prompts.PromptYesNo("Are you sure you want to delete this watcher?");
+                        break;
                     default:
                         Log.Information("Answer entered wasn't a valid presented option");
                         Console.WriteLine("Answer entered isn't one of the options, please press enter and try again");
                         Console.ReadLine();
                         break;
                 }
-                selectedTracker.Save();
+                if (removeWatcher)
+                {
+                    selectedTracker.Delete();
+                }
+                else
+                {
+                    selectedTracker.Save();
+                }
             }
             Log.Information("Exited Menu ModifySingleWatcher");
         }

@@ -22,11 +22,11 @@ namespace ArbitraryBot.BackEnd
             #endif
 
             Log.Logger = new LoggerConfiguration()
-                //.MinimumLevel.ControlledBy(Constants.LogLevelLocal)
+                .MinimumLevel.ControlledBy(Constants.LogLevelLocal)
                 .WriteTo.Async(c => c.File($"{Constants.PathLogs}\\{OSDynamic.GetProductAssembly().ProductName}_.log", rollingInterval: RollingInterval.Day,
                   outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
                   levelSwitch: Constants.LogLevelLocal))
-                .WriteTo.Async(c => c.Seq("http://dev.wobigtech.net:5341", apiKey: "xBJXeoMOJzEwG1HBuxgN", controlLevelSwitch: Constants.LogLevelCloud))
+                .WriteTo.Async(c => c.Seq("http://dev.wobigtech.net:5341", apiKey: Constants.LogUri, controlLevelSwitch: Constants.LogLevelCloud))
                 .WriteTo.Console(levelSwitch: Constants.LogLevelConsole,
                   outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}")
                 .Enrich.WithCaller()
@@ -149,6 +149,7 @@ namespace ArbitraryBot.BackEnd
         internal static void InitializeApp()
         {
             HouseKeeping.ValidateAllFilePaths(true);
+            HouseKeeping.ValidateLoggingReqs();
         }
 
         internal static StatusReturn OpenDir(AppFile appFile)
