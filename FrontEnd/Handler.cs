@@ -41,7 +41,7 @@ namespace ArbitraryBot.FrontEnd
                 if (arg.ToLower() == "-verbose")
                 {
                     Core.ChangeLoggingLevelLocal(Serilog.Events.LogEventLevel.Verbose);
-                    Core.ChangeLoggingLevelCloud(Serilog.Events.LogEventLevel.Verbose);
+                    Core.ChangeLoggingLevelCloud(Serilog.Events.LogEventLevel.Debug);
                     Log.Debug("Launch arg was {Arg}, changed cloud & local logging to verbose", arg);
                 }
             }
@@ -122,7 +122,9 @@ namespace ArbitraryBot.FrontEnd
             {
                 foreach (TrackedProduct tracker in splitList[currentPage - 1])
                 {
-                    menu += $"[{tracker.AlertInterval}] {tracker.FriendlyName}".ConvertToMenuOption(menuNum);
+                    string enabled = tracker.Enabled ? "E" : "D";
+                    string interval = tracker.AlertInterval == TrackInterval.OneMin ? "1Min" : "5Min";
+                    menu += $"[{interval}] [{enabled}] {tracker.FriendlyName}".ConvertToMenuOption(menuNum);
                     menuNum++;
                 }
                 if (currentPage >= 2)

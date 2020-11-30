@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Serilog;
 using Serilog.Events;
 using ArbitraryBot.Shared;
 using ArbitraryBot.Extensions;
-using System.IO;
 using System.Runtime.InteropServices;
 
 namespace ArbitraryBot.BackEnd
@@ -24,6 +19,8 @@ namespace ArbitraryBot.BackEnd
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.ControlledBy(Constants.LogLevelLocal)
                 .WriteTo.Async(c => c.File($"{Constants.PathLogs}\\{OSDynamic.GetProductAssembly().ProductName}_.log", rollingInterval: RollingInterval.Day,
+                  fileSizeLimitBytes: 10000000,
+                  rollOnFileSizeLimit: true,
                   outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
                   levelSwitch: Constants.LogLevelLocal))
                 .WriteTo.Async(c => c.Seq("http://dev.wobigtech.net:5341", apiKey: Constants.LogUri, controlLevelSwitch: Constants.LogLevelCloud))
@@ -43,6 +40,12 @@ namespace ArbitraryBot.BackEnd
             ChangeLoggingLevelConsole();
 
             Log.Information("==START-STOP== Application Started");
+
+            #if DEBUG
+            Log.Information("LogUri is Public1");
+            #else
+            Log.Information("LogUri is Public2");
+            #endif
         }
 
         public static void SaveEverything()
@@ -113,6 +116,7 @@ namespace ArbitraryBot.BackEnd
             {
                 Constants.LogLevelLocal.MinimumLevel = logLevel;
             }
+            Log.Information("Local Logging Set to: {LogLevel}", logLevel);
         }
 
         internal static void ChangeLoggingLevelConsole(LogEventLevel logLevel = LogEventLevel.Error)
@@ -127,6 +131,7 @@ namespace ArbitraryBot.BackEnd
             {
                 Constants.LogLevelConsole.MinimumLevel = logLevel;
             }
+            Log.Information("Console Logging Set to: {LogLevel}", logLevel);
         }
 
         internal static void ChangeLoggingLevelCloud(LogEventLevel logLevel = LogEventLevel.Warning)
@@ -144,6 +149,7 @@ namespace ArbitraryBot.BackEnd
             {
                 Constants.LogLevelCloud.MinimumLevel = logLevel;
             }
+            Log.Information("Cloud Logging Set to: {LogLevel}", logLevel);
         }
 
         internal static void InitializeApp()

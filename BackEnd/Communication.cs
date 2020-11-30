@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using ArbitraryBot.Shared;
 using Newtonsoft.Json;
@@ -120,7 +115,7 @@ namespace ArbitraryBot.BackEnd
             {
                 keywordFound = stream.Contains(keyword);
             }
-            Log.Verbose("Webpage Compressed:   {WebpageCompressed}", stream);
+            Log.Verbose("Webpage Compressed:   {WebpageCompressed}", contents);
             Log.Verbose("Webpage Uncompressed: {WebpageUncompressed}", stream);
             return new WebCheck()
             {
@@ -149,7 +144,7 @@ namespace ArbitraryBot.BackEnd
             Log.Verbose("Finished Adding Http Headers");
         }
 
-        internal static async Task<WebCheck> GetWebFileContents(string pageURL)
+        internal static async Task<WebCheck> GetWebFileContentsUncompressed(string pageURL)
         {
             if (HttpClient == null)
             {
@@ -163,17 +158,11 @@ namespace ArbitraryBot.BackEnd
             using var response = await HttpClient.SendAsync(request).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             var contents = await response.Content.ReadAsStringAsync();
-            using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            using var decompressedStream = new GZipStream(responseStream, CompressionMode.Decompress);
-            using var streamReader = new StreamReader(decompressedStream);
-            var stream = await streamReader.ReadToEndAsync();
-            Log.Verbose("Webpage Compressed:   {WebpageCompressed}", stream);
-            Log.Verbose("Webpage Uncompressed: {WebpageUncompressed}", stream);
+            Log.Verbose("Webpage Content: {WebpageCompressed}", contents);
             return new WebCheck()
             {
                 ResponseCode = response.StatusCode,
-                WebpageContents = contents,
-                DecompressedContents = stream
+                WebpageContents = contents
             };
         }
     }

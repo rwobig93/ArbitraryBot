@@ -1,5 +1,4 @@
-﻿using System;
-using ArbitraryBot.FrontEnd;
+﻿using ArbitraryBot.FrontEnd;
 using ArbitraryBot.BackEnd;
 using ArbitraryBot.Shared;
 

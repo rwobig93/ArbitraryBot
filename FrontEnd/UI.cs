@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using ArbitraryBot.BackEnd;
 using ArbitraryBot.Shared;
 using Serilog;
@@ -252,12 +249,12 @@ namespace ArbitraryBot.FrontEnd
         {
             Console.Clear();
             bool menuClose = false;
+            bool removeWatcher = false;
             while (!menuClose)
             {
                 string menuName = $"Modify: {selectedTracker.FriendlyName}";
                 string description = "Select the property you wish to modify:";
                 var answer = Prompts.PromptMenuTrackerProperties(menuName, description);
-                bool removeWatcher = false;
                 
                 switch (answer)
                 {
@@ -287,6 +284,7 @@ namespace ArbitraryBot.FrontEnd
                         break;
                     case 9:
                         removeWatcher = Prompts.PromptYesNo("Are you sure you want to delete this watcher?");
+                        menuClose = true;
                         break;
                     default:
                         Log.Information("Answer entered wasn't a valid presented option");

@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Serilog;
-using Serilog.Core;
 using System.IO;
 using Newtonsoft.Json;
 using ArbitraryBot.BackEnd;
@@ -14,7 +10,6 @@ namespace ArbitraryBot.Shared
 {
     public class Config
     {
-
         public static StatusReturn Load()
         {
             string configFile = OSDynamic.GetFilePath(Constants.PathConfigDefault, "Config.json");

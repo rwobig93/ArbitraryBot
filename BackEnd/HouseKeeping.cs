@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Serilog;
-using Serilog.Events;
 using ArbitraryBot.Shared;
-using ArbitraryBot.Extensions;
 using System.IO;
 using Nito.AsyncEx.Synchronous;
 
@@ -141,14 +136,10 @@ namespace ArbitraryBot.BackEnd
                 url = "https://wobigtech.net/public/public1.txt";
                 #endif
 
-                var webReq = Communication.GetWebFileContents(url).WaitAndUnwrapException();
-                if (!string.IsNullOrWhiteSpace(webReq.DecompressedContents))
+                var webReq = Communication.GetWebFileContentsUncompressed(url).WaitAndUnwrapException();
+                if (!string.IsNullOrWhiteSpace(webReq.WebpageContents))
                 {
-                    Constants.LogUri = webReq.DecompressedContents;
-                }
-                else if (!string.IsNullOrWhiteSpace(webReq.WebpageContents))
-                {
-                    Constants.LogUri = webReq.WebpageContents;
+                    Constants.LogUri = webReq.WebpageContents.Replace("\n", "");
                 }
             }
             catch (Exception ex)
