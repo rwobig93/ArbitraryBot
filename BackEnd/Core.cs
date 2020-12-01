@@ -17,7 +17,7 @@ namespace ArbitraryBot.BackEnd
             #endif
 
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.ControlledBy(Constants.LogLevelLocal)
+                //.MinimumLevel.ControlledBy(Constants.LogLevelLocal)
                 .WriteTo.Async(c => c.File($"{Constants.PathLogs}\\{OSDynamic.GetProductAssembly().ProductName}_.log", rollingInterval: RollingInterval.Day,
                   fileSizeLimitBytes: 10000000,
                   rollOnFileSizeLimit: true,

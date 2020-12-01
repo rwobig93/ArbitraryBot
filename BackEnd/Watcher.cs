@@ -36,16 +36,26 @@ namespace ArbitraryBot.BackEnd
             try
             {
                 Log.Verbose("Processing alert for tracker", tracker);
-                bool keywordFound = (await Communication.DoesKeywordExistOnWebpage(tracker.PageURL, tracker.Keyword)).KeywordExists;
-                bool keywordValidation = (await Communication.DoesKeywordExistOnWebpage(tracker.PageURL, tracker.Keyword)).KeywordExists;
-
-                if (keywordFound == keywordValidation)
+                WebCheck attempt1 = (await Communication.DoesKeywordExistOnWebpage(tracker.PageURL, tracker.Keyword));
+                if (attempt1 == null)
                 {
-                    if ((keywordFound && !tracker.AlertOnKeywordNotExist) || (!keywordFound && tracker.AlertOnKeywordNotExist))
+                    Log.Verbose("Attempt1 page is empty, not alerting");
+                    return;
+                }
+                WebCheck attempt2 = (await Communication.DoesKeywordExistOnWebpage(tracker.PageURL, tracker.Keyword));
+                if (attempt2 == null)
+                {
+                    Log.Verbose("Attempt2 page is empty, not alerting");
+                    return;
+                }
+
+                if (attempt1.KeywordExists == attempt2.KeywordExists)
+                {
+                    if ((attempt1.KeywordExists && !tracker.AlertOnKeywordNotExist) || (!attempt1.KeywordExists && tracker.AlertOnKeywordNotExist))
                     {
                         if (!tracker.Triggered)
                         {
-                            Log.Debug("Alerting on tracker as logic matches", tracker, keywordFound);
+                            Log.Debug("Alerting on tracker as logic matches", tracker, attempt1.KeywordExists);
                             ProcessAlertToSend(tracker);
                         }
                     }
@@ -53,14 +63,14 @@ namespace ArbitraryBot.BackEnd
                     {
                         if (tracker.Triggered)
                         {
-                            Log.Debug("Alerting on tracker as logic matches", tracker, keywordFound);
+                            Log.Debug("Alerting on tracker as logic matches", tracker, attempt1.KeywordExists);
                             ProcessAlertToReset(tracker);
                         }
                     }
                 }
                 else
                 {
-                    Log.Verbose("Keyword found [{KWFound}] and Validation [{KWValidation}] don't match, not alerting", keywordFound, keywordValidation);
+                    Log.Verbose("Keyword found [{KWFound}] and Validation [{KWValidation}] don't match, not alerting", attempt1.KeywordExists, attempt2.KeywordExists);
                 }
             }
             catch (Exception ex)

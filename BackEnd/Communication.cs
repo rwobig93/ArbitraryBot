@@ -106,6 +106,10 @@ namespace ArbitraryBot.BackEnd
             using var response = await HttpClient.SendAsync(request).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             var contents = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(contents))
+            {
+                return null;
+            }
             bool keywordFound = contents.Contains(keyword);
             using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             using var decompressedStream = new GZipStream(responseStream, CompressionMode.Decompress);
