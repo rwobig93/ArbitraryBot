@@ -7,12 +7,23 @@
     <Authors>Richard Wobig</Authors>
     <Company>Wobigtech</Company>
     <ApplicationIcon>ArbitraryBot_Icon.ico</ApplicationIcon>
-    <Version>1.0.0.1</Version>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <PublishSingleFile>true</PublishSingleFile>
     <PublishReadyToRun>true</PublishReadyToRun>
     <Platforms>AnyCPU;x64</Platforms>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <AssemblyVersion>1.0.*</AssemblyVersion>
+    <Deterministic>false</Deterministic>
+    <Configurations>Debug;Release;Beta;Stable</Configurations>
   </PropertyGroup>
+
+  <Target Name="Wobigtech_Deploy_Stable" AfterTargets="_CopyResolvedFilesToPublishPreserveNewest" Condition="'$(Configuration)'=='Stable'">
+    <Exec Command="C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe -command C:\.scripts\Publish_Deploy_Wobigtech.ps1" />
+  </Target>
+
+  <Target Name="Wobigtech_Deploy_Beta" AfterTargets="_CopyResolvedFilesToPublishPreserveNewest" Condition="'$(Configuration)'=='Beta'">
+    <Exec Command="C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe -command C:\.scripts\Publish_Deploy_Wobigtech.ps1 -BetaRelease" />
+  </Target>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>

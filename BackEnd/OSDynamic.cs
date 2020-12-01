@@ -32,13 +32,18 @@ namespace ArbitraryBot.BackEnd
 
         internal static ProductAssembly GetProductAssembly()
         {
-            var assy = Assembly.GetEntryAssembly();
+            var assy = Assembly.GetExecutingAssembly();
             return new ProductAssembly
             {
                 CompanyName = assy.GetCustomAttributes<AssemblyCompanyAttribute>()
                   .FirstOrDefault().Company,
                 ProductName = assy.GetCustomAttribute<AssemblyProductAttribute>().Product
             };
+        }
+
+        internal static Version GetRunningVersion(bool friendly = false)
+        {
+            return Assembly.GetExecutingAssembly().GetName().Version;
         }
 
         internal static string GetConfigPath()

@@ -10,6 +10,9 @@ namespace ArbitraryBot.Shared
 {
     public class Config
     {
+        public byte[] KeyA { get; set; }
+        public byte[] KeyB { get; set; }
+
         public static StatusReturn Load()
         {
             string configFile = OSDynamic.GetFilePath(Constants.PathConfigDefault, "Config.json");
@@ -64,9 +67,16 @@ namespace ArbitraryBot.Shared
             {
                 Log.Debug("Attempting to save a new config file");
             }
-            File.WriteAllText(configFile, JsonConvert.SerializeObject(Constants.Config));
+            Config finalConfig = SecureSensitiveProperties(Constants.Config);
+            File.WriteAllText(configFile, JsonConvert.SerializeObject(finalConfig));
             Log.Information("Successfully serialized config file");
             return StatusReturn.Success;
+        }
+
+        private static Config SecureSensitiveProperties(Config config)
+        {
+            // TODO
+            return config;
         }
 
         internal static void CreateNew()

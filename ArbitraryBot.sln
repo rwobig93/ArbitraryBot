@@ -7,12 +7,20 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArbitraryBot", "ArbitraryBo
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Beta|Any CPU = Beta|Any CPU
+		Beta|x64 = Beta|x64
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
+		Stable|Any CPU = Stable|Any CPU
+		Stable|x64 = Stable|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{39EB54FC-A412-40DF-A6EF-76931D7410BA}.Beta|Any CPU.ActiveCfg = Beta|Any CPU
+		{39EB54FC-A412-40DF-A6EF-76931D7410BA}.Beta|Any CPU.Build.0 = Beta|Any CPU
+		{39EB54FC-A412-40DF-A6EF-76931D7410BA}.Beta|x64.ActiveCfg = Beta|x64
+		{39EB54FC-A412-40DF-A6EF-76931D7410BA}.Beta|x64.Build.0 = Beta|x64
 		{39EB54FC-A412-40DF-A6EF-76931D7410BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{39EB54FC-A412-40DF-A6EF-76931D7410BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39EB54FC-A412-40DF-A6EF-76931D7410BA}.Debug|x64.ActiveCfg = Debug|x64
@@ -21,6 +29,10 @@ Global
 		{39EB54FC-A412-40DF-A6EF-76931D7410BA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{39EB54FC-A412-40DF-A6EF-76931D7410BA}.Release|x64.ActiveCfg = Release|x64
 		{39EB54FC-A412-40DF-A6EF-76931D7410BA}.Release|x64.Build.0 = Release|x64
+		{39EB54FC-A412-40DF-A6EF-76931D7410BA}.Stable|Any CPU.ActiveCfg = Stable|Any CPU
+		{39EB54FC-A412-40DF-A6EF-76931D7410BA}.Stable|Any CPU.Build.0 = Stable|Any CPU
+		{39EB54FC-A412-40DF-A6EF-76931D7410BA}.Stable|x64.ActiveCfg = Stable|x64
+		{39EB54FC-A412-40DF-A6EF-76931D7410BA}.Stable|x64.Build.0 = Stable|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

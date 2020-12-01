@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ArbitraryBot.BackEnd;
 using ArbitraryBot.Extensions;
 using ArbitraryBot.Shared;
 using Serilog;
@@ -72,7 +73,7 @@ namespace ArbitraryBot.FrontEnd
             return menu;
         }
 
-        internal static int PromptMenu(string menuTitle, string[] choices, string description = "")
+        internal static int PromptMenu(string menuTitle, string[] choices, string description = "", bool displayVersion = false)
         {
             Console.Clear();
             Log.Debug("Displaying Menu: {MenuTitle}", menuTitle);
@@ -83,6 +84,11 @@ namespace ArbitraryBot.FrontEnd
                 string menu = "";
                 menu = menu.AddSeperatorTilde();
                 menu += menuTitle.ConvertToMenuTitle();
+                if (displayVersion)
+                {
+                    var version = OSDynamic.GetRunningVersion();
+                    menu += $"v{version.Major}.{version.MajorRevision} ".ConvertToMenuTitle();
+                }
                 if (!string.IsNullOrWhiteSpace(description))
                 {
                     menu = menu.AddSeperatorDashed();

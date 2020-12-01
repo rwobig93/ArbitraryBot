@@ -31,7 +31,7 @@ namespace ArbitraryBot.FrontEnd
                         "Display Host Info",
                         "Close Bot"
                     };
-                    int answer = Prompts.PromptMenu(menuName, menuChoices, description);
+                    int answer = Prompts.PromptMenu(menuName, menuChoices, description, true);
                     
                     switch (answer)
                     {
@@ -361,6 +361,7 @@ namespace ArbitraryBot.FrontEnd
         {
             Log.Debug("Displaying host info");
             Console.WriteLine(
+                $"App Version:             {OSDynamic.GetRunningVersion()}{Environment.NewLine}" +
                 $"Hostname:                {Environment.MachineName}{Environment.NewLine}" +
                 $"Current OS Platform:     {OSDynamic.GetCurrentOS()}{Environment.NewLine}" +
                 $"Current OS Architecture: {RuntimeInformation.OSArchitecture}{Environment.NewLine}" +
