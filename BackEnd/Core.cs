@@ -101,6 +101,11 @@ namespace ArbitraryBot.BackEnd
             Log.Information("Finished Initializing First App Run");
         }
 
+        internal static bool CheckForUpdate()
+        {
+            throw new NotImplementedException();
+        }
+
         internal static void ChangeLoggingLevelLocal(LogEventLevel logLevel = LogEventLevel.Information)
         {
             #if DEBUG

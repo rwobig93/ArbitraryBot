@@ -4,6 +4,7 @@ using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ArbitraryBot.Extensions;
 using ArbitraryBot.Shared;
 using Newtonsoft.Json;
 using Serilog;
@@ -92,7 +93,7 @@ namespace ArbitraryBot.BackEnd
             }
         }
 
-        internal static async Task<WebCheck> DoesKeywordExistOnWebpage(string pageURL, string keyword)
+        internal static async Task<WebCheck> WebCheckForKeyword(string pageURL, string keyword)
         {
             if (HttpClient == null)
             {
@@ -106,27 +107,41 @@ namespace ArbitraryBot.BackEnd
             using var response = await HttpClient.SendAsync(request).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             var contents = await response.Content.ReadAsStringAsync();
+            Log.Verbose("Webpage Contents:   {WebpageContents}", contents);
+            Log.Information(contents);
             if (string.IsNullOrWhiteSpace(contents))
             {
                 return null;
             }
+            else if (contents.Contains("The browser you're using doesn't support JavaScript, or has JavaScript turned off."))
+            {
+                throw new Exception("Javascript required, bot blocking method in place");
+            }
             bool keywordFound = contents.Contains(keyword);
+            bool pageCompressed = contents.IsCompressed();
+            if (!pageCompressed)
+            {
+                return new WebCheck()
+                {
+                    KeywordExists = keywordFound,
+                    ResponseCode = response.StatusCode,
+                    WebpageContents = contents,
+                    WasCompressed = pageCompressed
+                };
+            }
             using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             using var decompressedStream = new GZipStream(responseStream, CompressionMode.Decompress);
             using var streamReader = new StreamReader(decompressedStream);
             var stream = await streamReader.ReadToEndAsync();
-            if (!keywordFound)
-            {
-                keywordFound = stream.Contains(keyword);
-            }
-            Log.Verbose("Webpage Compressed:   {WebpageCompressed}", contents);
+            keywordFound = stream.Contains(keyword);
             Log.Verbose("Webpage Uncompressed: {WebpageUncompressed}", stream);
             return new WebCheck()
             {
                 KeywordExists = keywordFound,
                 ResponseCode = response.StatusCode,
                 WebpageContents = contents,
-                DecompressedContents = stream
+                DecompressedContents = stream,
+                WasCompressed = pageCompressed
             };
         }
 

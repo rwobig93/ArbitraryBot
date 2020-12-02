@@ -36,13 +36,13 @@ namespace ArbitraryBot.BackEnd
             try
             {
                 Log.Verbose("Processing alert for tracker", tracker);
-                WebCheck attempt1 = (await Communication.DoesKeywordExistOnWebpage(tracker.PageURL, tracker.Keyword));
+                WebCheck attempt1 = (await Communication.WebCheckForKeyword(tracker.PageURL, tracker.Keyword));
                 if (attempt1 == null)
                 {
                     Log.Verbose("Attempt1 page is empty, not alerting");
                     return;
                 }
-                WebCheck attempt2 = (await Communication.DoesKeywordExistOnWebpage(tracker.PageURL, tracker.Keyword));
+                WebCheck attempt2 = (await Communication.WebCheckForKeyword(tracker.PageURL, tracker.Keyword));
                 if (attempt2 == null)
                 {
                     Log.Verbose("Attempt2 page is empty, not alerting");

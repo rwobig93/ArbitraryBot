@@ -86,8 +86,15 @@ namespace ArbitraryBot.FrontEnd
                 menu += menuTitle.ConvertToMenuTitle();
                 if (displayVersion)
                 {
-                    var version = OSDynamic.GetRunningVersion();
-                    menu += $"v{version.Major}.{version.MajorRevision} ".ConvertToMenuTitle();
+                    if (Constants.UpdateReady)
+                    {
+                        menu += "Update Ready on next App Startup".ConvertToMenuTitle();
+                    }
+                    else
+                    {
+                        var version = OSDynamic.GetRunningVersion();
+                        menu += $"v{version.Major}.{version.Minor}.{version.Build} ".ConvertToMenuTitle();
+                    }
                 }
                 if (!string.IsNullOrWhiteSpace(description))
                 {

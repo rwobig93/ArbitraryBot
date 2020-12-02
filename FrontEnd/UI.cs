@@ -28,7 +28,7 @@ namespace ArbitraryBot.FrontEnd
                         "Test Watcher Alert",
                         "Test Keyword On Website",
                         "Open Directory",
-                        "Display Host Info",
+                        "Settings",
                         "Close Bot"
                     };
                     int answer = Prompts.PromptMenu(menuName, menuChoices, description, true);
@@ -51,7 +51,7 @@ namespace ArbitraryBot.FrontEnd
                             ShowMenuOpenDirectory();
                             break;
                         case 6:
-                            DisplayHostInfo();
+                            ShowMenuSettings();
                             break;
                         case 7:
                             Handler.CloseApp();
@@ -72,6 +72,50 @@ namespace ArbitraryBot.FrontEnd
             Log.Information("Exited menu root");
         }
 
+        private static void ShowMenuSettings()
+        {
+            bool menuClose = false;
+            while (!menuClose)
+            {
+                var menuTitle = "Settings Menu";
+                var description = "Select a setting to modify or an action:";
+                string[] choices = new string[]
+                {
+                    "Back to the Main Menu",
+                    "Show Running Environment Details",
+                    "Check for an Update",
+                    "Email Settings",
+                    "Enable Beta Updates"
+                };
+                int answer = Prompts.PromptMenu(menuTitle, choices, description);
+                switch (answer)
+                {
+                    case 1:
+                        menuClose = true;
+                        break;
+                    case 2:
+                        DisplayHostInfo();
+                        break;
+                    case 3:
+                        bool updateAvailable = Core.CheckForUpdate();
+                        if (updateAvailable)
+                            Console.WriteLine("An update is available and is downloading now, we'll alert you when it's ready");
+                        else
+                            Console.WriteLine("You are on the latest version!");
+                        StopForMessage();
+                        break;
+                    case 4:
+                        break;
+                    default:
+                        Log.Information("Answer entered wasn't a valid presented option");
+                        Console.WriteLine("Answer entered isn't one of the options, please press enter and try again");
+                        Console.ReadLine();
+                        break;
+                }
+                Console.Clear();
+            }
+        }
+
         private static void ShowMenuTestKeywordOnWebpage()
         {
             bool menuClose = false;
@@ -84,7 +128,8 @@ namespace ArbitraryBot.FrontEnd
 
                 try
                 {
-                    webCheck = Communication.DoesKeywordExistOnWebpage(webpage, keyword).WaitAndUnwrapException();
+                    webCheck = Communication.WebCheckForKeyword(webpage, keyword).WaitAndUnwrapException();
+                    Console.WriteLine("The webpage that was returned was empty/blank");
                 }
                 catch (Exception ex)
                 {

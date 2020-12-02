@@ -60,5 +60,10 @@ namespace ArbitraryBot.Extensions
         {
             return _string += $"|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{Environment.NewLine}";
         }
+
+        public static bool IsCompressed(this string _string)
+        {
+            return _string.Contains("�");
+        }
     }
 }
