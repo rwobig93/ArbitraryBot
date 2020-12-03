@@ -54,7 +54,7 @@ namespace ArbitraryBot.BackEnd
                            byte[] nonSecretPayload = null)
         {
             if (string.IsNullOrEmpty(secretMessage))
-                throw new ArgumentException("Secret Message Required!", "secretMessage");
+                throw new ArgumentException("Secret Message Required!", nameof(secretMessage));
 
             var plainText = Encoding.UTF8.GetBytes(secretMessage);
             var cipherText = SimpleEncrypt(plainText, cryptKey, authKey, nonSecretPayload);
@@ -76,7 +76,7 @@ namespace ArbitraryBot.BackEnd
                            int nonSecretPayloadLength = 0)
         {
             if (string.IsNullOrWhiteSpace(encryptedMessage))
-                throw new ArgumentException("Encrypted Message Required!", "encryptedMessage");
+                throw new ArgumentException("Encrypted Message Required!", nameof(encryptedMessage));
 
             var cipherText = Convert.FromBase64String(encryptedMessage);
             var plainText = SimpleDecrypt(cipherText, cryptKey, authKey, nonSecretPayloadLength);
@@ -102,7 +102,7 @@ namespace ArbitraryBot.BackEnd
                                  byte[] nonSecretPayload = null)
         {
             if (string.IsNullOrEmpty(secretMessage))
-                throw new ArgumentException("Secret Message Required!", "secretMessage");
+                throw new ArgumentException("Secret Message Required!", nameof(secretMessage));
 
             var plainText = Encoding.UTF8.GetBytes(secretMessage);
             var cipherText = SimpleEncryptWithPassword(plainText, password, nonSecretPayload);
@@ -127,7 +127,7 @@ namespace ArbitraryBot.BackEnd
                                  int nonSecretPayloadLength = 0)
         {
             if (string.IsNullOrWhiteSpace(encryptedMessage))
-                throw new ArgumentException("Encrypted Message Required!", "encryptedMessage");
+                throw new ArgumentException("Encrypted Message Required!", nameof(encryptedMessage));
 
             var cipherText = Convert.FromBase64String(encryptedMessage);
             var plainText = SimpleDecryptWithPassword(cipherText, password, nonSecretPayloadLength);
@@ -138,16 +138,16 @@ namespace ArbitraryBot.BackEnd
         {
             //User Error Checks
             if (cryptKey == null || cryptKey.Length != KeyBitSize / 8)
-                throw new ArgumentException(String.Format("Key needs to be {0} bit!", KeyBitSize), "cryptKey");
+                throw new ArgumentException(String.Format("Key needs to be {0} bit!", KeyBitSize), nameof(cryptKey));
 
             if (authKey == null || authKey.Length != KeyBitSize / 8)
-                throw new ArgumentException(String.Format("Key needs to be {0} bit!", KeyBitSize), "authKey");
+                throw new ArgumentException(String.Format("Key needs to be {0} bit!", KeyBitSize), nameof(authKey));
 
             if (secretMessage == null || secretMessage.Length < 1)
-                throw new ArgumentException("Secret Message Required!", "secretMessage");
+                throw new ArgumentException("Secret Message Required!", nameof(secretMessage));
 
             //non-secret payload optional
-            nonSecretPayload = nonSecretPayload ?? new byte[] { };
+            nonSecretPayload ??= Array.Empty<byte>();
 
             byte[] cipherText;
             byte[] iv;
@@ -165,42 +165,38 @@ namespace ArbitraryBot.BackEnd
                 aes.GenerateIV();
                 iv = aes.IV;
 
-                using (var encrypter = aes.CreateEncryptor(cryptKey, iv))
-                using (var cipherStream = new MemoryStream())
+                using var encrypter = aes.CreateEncryptor(cryptKey, iv);
+                using var cipherStream = new MemoryStream();
+                using (var cryptoStream = new CryptoStream(cipherStream, encrypter, CryptoStreamMode.Write))
+                using (var binaryWriter = new BinaryWriter(cryptoStream))
                 {
-                    using (var cryptoStream = new CryptoStream(cipherStream, encrypter, CryptoStreamMode.Write))
-                    using (var binaryWriter = new BinaryWriter(cryptoStream))
-                    {
-                        //Encrypt Data
-                        binaryWriter.Write(secretMessage);
-                    }
-
-                    cipherText = cipherStream.ToArray();
+                    //Encrypt Data
+                    binaryWriter.Write(secretMessage);
                 }
+
+                cipherText = cipherStream.ToArray();
 
             }
 
             //Assemble encrypted message and add authentication
-            using (var hmac = new HMACSHA256(authKey))
-            using (var encryptedStream = new MemoryStream())
+            using var hmac = new HMACSHA256(authKey);
+            using var encryptedStream = new MemoryStream();
+            using (var binaryWriter = new BinaryWriter(encryptedStream))
             {
-                using (var binaryWriter = new BinaryWriter(encryptedStream))
-                {
-                    //Prepend non-secret payload if any
-                    binaryWriter.Write(nonSecretPayload);
-                    //Prepend IV
-                    binaryWriter.Write(iv);
-                    //Write Ciphertext
-                    binaryWriter.Write(cipherText);
-                    binaryWriter.Flush();
+                //Prepend non-secret payload if any
+                binaryWriter.Write(nonSecretPayload);
+                //Prepend IV
+                binaryWriter.Write(iv);
+                //Write Ciphertext
+                binaryWriter.Write(cipherText);
+                binaryWriter.Flush();
 
-                    //Authenticate all data
-                    var tag = hmac.ComputeHash(encryptedStream.ToArray());
-                    //Postpend tag
-                    binaryWriter.Write(tag);
-                }
-                return encryptedStream.ToArray();
+                //Authenticate all data
+                var tag = hmac.ComputeHash(encryptedStream.ToArray());
+                //Postpend tag
+                binaryWriter.Write(tag);
             }
+            return encryptedStream.ToArray();
 
         }
 
@@ -209,80 +205,74 @@ namespace ArbitraryBot.BackEnd
 
             //Basic Usage Error Checks
             if (cryptKey == null || cryptKey.Length != KeyBitSize / 8)
-                throw new ArgumentException(String.Format("CryptKey needs to be {0} bit!", KeyBitSize), "cryptKey");
+                throw new ArgumentException(String.Format("CryptKey needs to be {0} bit!", KeyBitSize), nameof(cryptKey));
 
             if (authKey == null || authKey.Length != KeyBitSize / 8)
-                throw new ArgumentException(String.Format("AuthKey needs to be {0} bit!", KeyBitSize), "authKey");
+                throw new ArgumentException(String.Format("AuthKey needs to be {0} bit!", KeyBitSize), nameof(authKey));
 
             if (encryptedMessage == null || encryptedMessage.Length == 0)
-                throw new ArgumentException("Encrypted Message Required!", "encryptedMessage");
+                throw new ArgumentException("Encrypted Message Required!", nameof(encryptedMessage));
 
-            using (var hmac = new HMACSHA256(authKey))
+            using var hmac = new HMACSHA256(authKey);
+            var sentTag = new byte[hmac.HashSize / 8];
+            //Calculate Tag
+            var calcTag = hmac.ComputeHash(encryptedMessage, 0, encryptedMessage.Length - sentTag.Length);
+            var ivLength = (BlockBitSize / 8);
+
+            //if message length is to small just return null
+            if (encryptedMessage.Length < sentTag.Length + nonSecretPayloadLength + ivLength)
+                return null;
+
+            //Grab Sent Tag
+            Array.Copy(encryptedMessage, encryptedMessage.Length - sentTag.Length, sentTag, 0, sentTag.Length);
+
+            //Compare Tag with constant time comparison
+            var compare = 0;
+            for (var i = 0; i < sentTag.Length; i++)
+                compare |= sentTag[i] ^ calcTag[i];
+
+            //if message doesn't authenticate return null
+            if (compare != 0)
+                return null;
+
+            using var aes = new AesManaged
             {
-                var sentTag = new byte[hmac.HashSize / 8];
-                //Calculate Tag
-                var calcTag = hmac.ComputeHash(encryptedMessage, 0, encryptedMessage.Length - sentTag.Length);
-                var ivLength = (BlockBitSize / 8);
+                KeySize = KeyBitSize,
+                BlockSize = BlockBitSize,
+                Mode = CipherMode.CBC,
+                Padding = PaddingMode.PKCS7
+            };
 
-                //if message length is to small just return null
-                if (encryptedMessage.Length < sentTag.Length + nonSecretPayloadLength + ivLength)
-                    return null;
+            //Grab IV from message
+            var iv = new byte[ivLength];
+            Array.Copy(encryptedMessage, nonSecretPayloadLength, iv, 0, iv.Length);
 
-                //Grab Sent Tag
-                Array.Copy(encryptedMessage, encryptedMessage.Length - sentTag.Length, sentTag, 0, sentTag.Length);
-
-                //Compare Tag with constant time comparison
-                var compare = 0;
-                for (var i = 0; i < sentTag.Length; i++)
-                    compare |= sentTag[i] ^ calcTag[i];
-
-                //if message doesn't authenticate return null
-                if (compare != 0)
-                    return null;
-
-                using (var aes = new AesManaged
-                {
-                    KeySize = KeyBitSize,
-                    BlockSize = BlockBitSize,
-                    Mode = CipherMode.CBC,
-                    Padding = PaddingMode.PKCS7
-                })
-                {
-
-                    //Grab IV from message
-                    var iv = new byte[ivLength];
-                    Array.Copy(encryptedMessage, nonSecretPayloadLength, iv, 0, iv.Length);
-
-                    using (var decrypter = aes.CreateDecryptor(cryptKey, iv))
-                    using (var plainTextStream = new MemoryStream())
-                    {
-                        using (var decrypterStream = new CryptoStream(plainTextStream, decrypter, CryptoStreamMode.Write))
-                        using (var binaryWriter = new BinaryWriter(decrypterStream))
-                        {
-                            //Decrypt Cipher Text from Message
-                            binaryWriter.Write(
-                              encryptedMessage,
-                              nonSecretPayloadLength + iv.Length,
-                              encryptedMessage.Length - nonSecretPayloadLength - iv.Length - sentTag.Length
-                            );
-                        }
-                        //Return Plain Text
-                        return plainTextStream.ToArray();
-                    }
-                }
+            using var decrypter = aes.CreateDecryptor(cryptKey, iv);
+            using var plainTextStream = new MemoryStream();
+            using (var decrypterStream = new CryptoStream(plainTextStream, decrypter, CryptoStreamMode.Write))
+            using (var binaryWriter = new BinaryWriter(decrypterStream))
+            {
+                //Decrypt Cipher Text from Message
+                binaryWriter.Write(
+                  encryptedMessage,
+                  nonSecretPayloadLength + iv.Length,
+                  encryptedMessage.Length - nonSecretPayloadLength - iv.Length - sentTag.Length
+                );
             }
+            //Return Plain Text
+            return plainTextStream.ToArray();
         }
 
         public static byte[] SimpleEncryptWithPassword(byte[] secretMessage, string password, byte[] nonSecretPayload = null)
         {
-            nonSecretPayload = nonSecretPayload ?? new byte[] { };
+            nonSecretPayload ??= Array.Empty<byte>();
 
             //User Error Checks
             if (string.IsNullOrWhiteSpace(password) || password.Length < MinPasswordLength)
-                throw new ArgumentException(String.Format("Must have a password of at least {0} characters!", MinPasswordLength), "password");
+                throw new ArgumentException(String.Format("Must have a password of at least {0} characters!", MinPasswordLength), nameof(password));
 
             if (secretMessage == null || secretMessage.Length == 0)
-                throw new ArgumentException("Secret Message Required!", "secretMessage");
+                throw new ArgumentException("Secret Message Required!", nameof(secretMessage));
 
             var payload = new byte[((SaltBitSize / 8) * 2) + nonSecretPayload.Length];
 
@@ -324,10 +314,10 @@ namespace ArbitraryBot.BackEnd
         {
             //User Error Checks
             if (string.IsNullOrWhiteSpace(password) || password.Length < MinPasswordLength)
-                throw new ArgumentException(String.Format("Must have a password of at least {0} characters!", MinPasswordLength), "password");
+                throw new ArgumentException(String.Format("Must have a password of at least {0} characters!", MinPasswordLength), nameof(password));
 
             if (encryptedMessage == null || encryptedMessage.Length == 0)
-                throw new ArgumentException("Encrypted Message Required!", "encryptedMessage");
+                throw new ArgumentException("Encrypted Message Required!", nameof(encryptedMessage));
 
             var cryptSalt = new byte[SaltBitSize / 8];
             var authSalt = new byte[SaltBitSize / 8];

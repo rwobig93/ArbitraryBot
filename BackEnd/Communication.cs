@@ -5,7 +5,10 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ArbitraryBot.Extensions;
+using ArbitraryBot.FrontEnd;
 using ArbitraryBot.Shared;
+using MailKit.Net.Smtp;
+using MimeKit;
 using Newtonsoft.Json;
 using Serilog;
 
@@ -90,6 +93,7 @@ namespace ArbitraryBot.BackEnd
             catch (Exception ex)
             {
                 Log.Error(ex, "Failure occured when attempting to send tracker alert webhook", tracker);
+                Handler.NotifyError(ex, "Alert");
             }
         }
 
@@ -183,6 +187,33 @@ namespace ArbitraryBot.BackEnd
                 ResponseCode = response.StatusCode,
                 WebpageContents = contents
             };
+        }
+
+        internal static void SendEmail(TrackedProduct tracker, string title = null, string msg = null)
+        {
+            var mailMessage = new MimeMessage();
+            mailMessage.From.Add(new MailboxAddress(Constants.Config.SMTPEmailName, Constants.Config.SMTPEmailFrom));
+            foreach (var address in tracker.Emails.Split(','))
+            {
+                mailMessage.Bcc.Add(new MailboxAddress(address.ToString()));
+            }
+
+            if (title == null)
+                title = $"Keyword alert {tracker.FriendlyName}, Go Go Go!";
+            if (msg == null)
+                msg = $"Alerting on the tracker for the following page:{Environment.NewLine}{tracker.PageURL}";
+
+            mailMessage.Subject = title;
+            mailMessage.Body = new TextPart("plain")
+            {
+                Text = msg
+            };
+
+            using var smtpClient = new SmtpClient();
+            smtpClient.Connect(Constants.Config.SMTPUrl, Constants.Config.SMTPPort, true);
+            smtpClient.Authenticate(Constants.Config.SMTPUsername, Constants.Config.SMTPPassword);
+            smtpClient.Send(mailMessage);
+            smtpClient.Disconnect(true);
         }
     }
 }

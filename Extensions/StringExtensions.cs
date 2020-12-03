@@ -51,6 +51,15 @@ namespace ArbitraryBot.Extensions
             return $"|{_string.PadLeft(1 + _string.Length, ' ').PadRight(propNameMax + 2)}: {value}{Environment.NewLine}";
         }
 
+        public static string ConvertToNotification(this string _string)
+        {
+            if (_string.Length > 66)
+            {
+                _string = _string.Substring(0, 66);
+            }
+            return $"| Notifiy: {_string,-65}|{Environment.NewLine}";
+        }
+
         public static string AddSeperatorDashed(this string _string)
         {
             return _string += $"|  -----------------------------------------------------------------------  |{Environment.NewLine}";

@@ -4,6 +4,7 @@ using Serilog.Events;
 using ArbitraryBot.Shared;
 using ArbitraryBot.Extensions;
 using System.Runtime.InteropServices;
+using ArbitraryBot.FrontEnd;
 
 namespace ArbitraryBot.BackEnd
 {
@@ -11,21 +12,19 @@ namespace ArbitraryBot.BackEnd
     {
         internal static void InitializeLogger()
         {
-            #if DEBUG
-            Constants.LogLevelCloud.MinimumLevel = LogEventLevel.Debug;
-            Constants.LogLevelLocal.MinimumLevel = LogEventLevel.Debug;
-            #endif
+            if (Constants.DebugMode)
+            {
+                Constants.LogLevelCloud.MinimumLevel = LogEventLevel.Debug;
+                Constants.LogLevelLocal.MinimumLevel = LogEventLevel.Debug;
+            }
 
             Log.Logger = new LoggerConfiguration()
-                //.MinimumLevel.ControlledBy(Constants.LogLevelLocal)
                 .WriteTo.Async(c => c.File($"{Constants.PathLogs}\\{OSDynamic.GetProductAssembly().ProductName}_.log", rollingInterval: RollingInterval.Day,
                   fileSizeLimitBytes: 10000000,
                   rollOnFileSizeLimit: true,
                   outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
                   levelSwitch: Constants.LogLevelLocal))
                 .WriteTo.Async(c => c.Seq("http://dev.wobigtech.net:5341", apiKey: Constants.LogUri, controlLevelSwitch: Constants.LogLevelCloud))
-                .WriteTo.Console(levelSwitch: Constants.LogLevelConsole,
-                  outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}")
                 .Enrich.WithCaller()
                 .Enrich.WithThreadId()
                 .Enrich.WithThreadName()
@@ -41,11 +40,10 @@ namespace ArbitraryBot.BackEnd
 
             Log.Information("==START-STOP== Application Started");
 
-            #if DEBUG
-            Log.Information("LogUri is Public1");
-            #else
-            Log.Information("LogUri is Public2");
-            #endif
+            if (Constants.DebugMode)
+                Log.Information("LogUri is Public1");
+            else
+                Log.Information("LogUri is Public2");
         }
 
         public static void SaveEverything()
@@ -108,9 +106,8 @@ namespace ArbitraryBot.BackEnd
 
         internal static void ChangeLoggingLevelLocal(LogEventLevel logLevel = LogEventLevel.Information)
         {
-            #if DEBUG
-            logLevel = LogEventLevel.Debug;
-            #endif
+            if (Constants.DebugMode)
+                logLevel = LogEventLevel.Debug;
 
             if (Constants.LogLevelLocal == null)
             {
@@ -141,9 +138,8 @@ namespace ArbitraryBot.BackEnd
 
         internal static void ChangeLoggingLevelCloud(LogEventLevel logLevel = LogEventLevel.Warning)
         {
-            #if DEBUG
-            logLevel = LogEventLevel.Debug;
-            #endif
+            if (Constants.DebugMode)
+                logLevel = LogEventLevel.Debug;
 
             if (Constants.LogLevelCloud == null)
             {
@@ -160,6 +156,7 @@ namespace ArbitraryBot.BackEnd
         internal static void InitializeApp()
         {
             HouseKeeping.ValidateAllFilePaths(true);
+            HouseKeeping.ValidateRunningMode();
             HouseKeeping.ValidateLoggingReqs();
         }
 
@@ -181,6 +178,7 @@ namespace ArbitraryBot.BackEnd
             catch (Exception ex)
             {
                 Log.Error(ex, "Failed to open directory");
+                Handler.NotifyError(ex, "OpenFolder");
                 return StatusReturn.Failure;
             }
         }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ArbitraryBot.BackEnd;
 using ArbitraryBot.Extensions;
 using ArbitraryBot.Shared;
@@ -44,6 +45,21 @@ namespace ArbitraryBot.FrontEnd
                     Core.ChangeLoggingLevelCloud(Serilog.Events.LogEventLevel.Debug);
                     Log.Debug("Launch arg was {Arg}, changed cloud & local logging to verbose", arg);
                 }
+            }
+        }
+
+        internal static void TestAction()
+        {
+            if (!Constants.DebugMode)
+            {
+                UI.AddNewNotification("You shouldn't be here... how'd you do that?");
+                UI.StopForMessage();
+                return;
+            }
+            for (int i = 0; i < 5; i++)
+            {
+                UI.AddNewNotification($"Test notification: {i} | Notify Count: {Constants.Notifications.Count}");
+                UI.StopForMessage();
             }
         }
 
@@ -149,6 +165,23 @@ namespace ArbitraryBot.FrontEnd
                 2 => TrackInterval.FiveMin,
                 _ => TrackInterval.FiveMin,
             };
+        }
+
+        internal static void NotifyError(string error)
+        {
+            Log.Information($"Nofiying Error: [Error] {error}");
+            UI.AddNewNotification($"[Error] {error}");
+        }
+
+        internal static void NotifyError(Exception ex, string error = "")
+        {
+            string message;
+            if (string.IsNullOrWhiteSpace(error))
+                message = $"[Error]: {ex.Message}";
+            else
+                message = $"[{error}] {ex.Message}";
+            Log.Information("Nofiying Error: {Notification}", message);
+            UI.AddNewNotification(message);
         }
     }
 }

@@ -32,6 +32,10 @@ namespace ArbitraryBot.FrontEnd
                         "Close Bot"
                     };
                     int answer = Prompts.PromptMenu(menuName, menuChoices, description, true);
+                    if (Constants.DebugMode && answer == 99)
+                    {
+                        Handler.TestAction();
+                    }
                     
                     switch (answer)
                     {
@@ -67,6 +71,7 @@ namespace ArbitraryBot.FrontEnd
                 catch (Exception ex)
                 {
                     Log.Error(ex, $"Error: {ex.Message}");
+                    Handler.NotifyError(ex);
                 }
             }
             Log.Information("Exited menu root");
@@ -82,7 +87,7 @@ namespace ArbitraryBot.FrontEnd
                 string[] choices = new string[]
                 {
                     "Back to the Main Menu",
-                    "Show Running Environment Details",
+                    "Show Running Environment & Settings Details",
                     "Check for an Update",
                     "Email Settings",
                     "Enable Beta Updates"
@@ -94,7 +99,7 @@ namespace ArbitraryBot.FrontEnd
                         menuClose = true;
                         break;
                     case 2:
-                        DisplayHostInfo();
+                        ShowEnvironmentVariables();
                         break;
                     case 3:
                         bool updateAvailable = Core.CheckForUpdate();
@@ -105,6 +110,10 @@ namespace ArbitraryBot.FrontEnd
                         StopForMessage();
                         break;
                     case 4:
+                        Prompts.PromptEmailSettings();
+                        break;
+                    case 5:
+                        Constants.Config.BetaUpdates = Prompts.PromptYesNo("Would you like to get Beta versions of this app? (Some updates may be unstable)");
                         break;
                     default:
                         Log.Information("Answer entered wasn't a valid presented option");
@@ -246,7 +255,7 @@ namespace ArbitraryBot.FrontEnd
             Log.Information("Exited Menu OpenDirectory");
         }
 
-        private static void StopForMessage()
+        internal static void StopForMessage()
         {
             Log.Debug("Stopping for a message that is being displayed");
             Console.WriteLine($"{Environment.NewLine}Press enter to continue");
@@ -402,20 +411,53 @@ namespace ArbitraryBot.FrontEnd
             Log.Information("Exited Menu AddWatcher");
         }
 
-        internal static void DisplayHostInfo()
+        internal static void DisplayLatestNotification()
         {
-            Log.Debug("Displaying host info");
-            Console.WriteLine(
-                $"App Version:             {OSDynamic.GetRunningVersion()}{Environment.NewLine}" +
-                $"Hostname:                {Environment.MachineName}{Environment.NewLine}" +
-                $"Current OS Platform:     {OSDynamic.GetCurrentOS()}{Environment.NewLine}" +
-                $"Current OS Architecture: {RuntimeInformation.OSArchitecture}{Environment.NewLine}" +
-                $"Current OS Description:  {RuntimeInformation.OSDescription}{Environment.NewLine}" +
-                $"Current Process Arch:    {RuntimeInformation.ProcessArchitecture}{Environment.NewLine}" +
-                $"Current Framework:       {RuntimeInformation.FrameworkDescription}{Environment.NewLine}" +
-                $"Logging Path:            {Constants.PathLogs}{Environment.NewLine}" +
-                $"Config Path:             {Constants.PathConfigDefault}{Environment.NewLine}");
-            Log.Information("Host info Displayed");
+            Log.Verbose("Updating Notification");
+            var (Left, Top) = Console.GetCursorPosition();
+            Console.SetCursorPosition(0, 0);
+            Console.Write(Constants.Notifications.Last().ConvertToNotification());
+            Log.Debug("Updating Notification: {Notification}", Constants.Notifications[0]);
+            Console.SetCursorPosition(Left, Top);
+            Log.Verbose("Set cursor position back");
+        }
+
+        internal static void AddNewNotification(string notification)
+        {
+            Log.Verbose("Adding new notification: {Notification}", notification);
+            Constants.Notifications.Add(notification);
+            if (Constants.Notifications.Count >= 5)
+            {
+                Log.Verbose("Removed oldest notification");
+                Constants.Notifications.RemoveAt(0);
+            }
+            DisplayLatestNotification();
+        }
+
+        internal static void ShowEnvironmentVariables()
+        {
+            Log.Debug("Displaying Environment & Setting Details");
+            string info = "".AddSeperatorTilde();
+            int envLength = 25;
+            int setLength = 18;
+            info += "Environment Variables".ConvertToMenuTitle();
+            info += "App Version".ConvertToMenuProperty(OSDynamic.GetRunningVersion().ToString(), envLength);
+            info += "Hostname".ConvertToMenuProperty(Environment.MachineName, envLength);
+            info += "Current OS Platform".ConvertToMenuProperty(OSDynamic.GetCurrentOS().ToString(), envLength);
+            info += "Current OS Architecture".ConvertToMenuProperty(RuntimeInformation.OSArchitecture.ToString(), envLength);
+            info += "Current OS Description".ConvertToMenuProperty(RuntimeInformation.OSDescription, envLength);
+            info += "Current Process Arch".ConvertToMenuProperty(RuntimeInformation.ProcessArchitecture.ToString(), envLength);
+            info += "Current Framework".ConvertToMenuProperty(RuntimeInformation.FrameworkDescription, envLength);
+            info += "Logging Path".ConvertToMenuProperty(Constants.PathLogs, envLength);
+            info += "Config Path".ConvertToMenuProperty(Constants.PathConfigDefault, envLength);
+            info += "Current Settings".ConvertToMenuTitle();
+            info += "Email Name".ConvertToMenuProperty(Constants.Config.SMTPEmailName, setLength);
+            info += "Email From Address".ConvertToMenuProperty(Constants.Config.SMTPEmailFrom, setLength);
+            info += "Email URL".ConvertToMenuProperty(Constants.Config.SMTPUrl, setLength);
+            info += "Email Port".ConvertToMenuProperty(Constants.Config.SMTPPort.ToString(), setLength);
+            info = info.AddSeperatorTilde();
+            Console.WriteLine(info);
+            Log.Information("Environment & Setting Details Displayed");
             StopForMessage();
         }
     }

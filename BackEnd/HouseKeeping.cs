@@ -5,6 +5,7 @@ using ArbitraryBot.Shared;
 using System.IO;
 using Nito.AsyncEx.Synchronous;
 using System.Reflection;
+using ArbitraryBot.FrontEnd;
 
 namespace ArbitraryBot.BackEnd
 {
@@ -43,6 +44,7 @@ namespace ArbitraryBot.BackEnd
                         if (!initial)
                         {
                             Log.Error(ex, "Unable to create required directory");
+                            Handler.NotifyError(ex, "FolderCreate");
                         }
                     }
                 }
@@ -56,6 +58,7 @@ namespace ArbitraryBot.BackEnd
                 if (!initial)
                 {
                     Log.Error(ex, "Failed to validate all file paths");
+                    Handler.NotifyError(ex, "FolderCreate");
                 }
             }
         }
@@ -89,7 +92,8 @@ namespace ArbitraryBot.BackEnd
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to cleanup old {appFile} files");
+                Log.Error(ex, "Failed to cleanup old {FileName} files", appFile);
+                Handler.NotifyError(ex, "FileCleanup");
             }
         }
 
@@ -107,6 +111,7 @@ namespace ArbitraryBot.BackEnd
                     catch (Exception ex)
                     {
                         Log.Error(ex, "Failed to backup the current configuration");
+                        Handler.NotifyError(ex, "ConfigBackup");
                     }
                     break;
                 case AppFile.Log:
@@ -123,6 +128,7 @@ namespace ArbitraryBot.BackEnd
                     catch (Exception ex)
                     {
                         Log.Error(ex, "Failed to backup the current saved data set");
+                        Handler.NotifyError(ex, "DataBackup");
                     }
                     break;
             }
@@ -133,9 +139,8 @@ namespace ArbitraryBot.BackEnd
             try
             {
                 var url = "https://wobigtech.net/public/public2.txt";
-                #if DEBUG
-                url = "https://wobigtech.net/public/public1.txt";
-                #endif
+                if (Constants.DebugMode)
+                    url = "https://wobigtech.net/public/public1.txt";
 
                 var webReq = Communication.GetWebFileContentsUncompressed(url).WaitAndUnwrapException();
                 if (!string.IsNullOrWhiteSpace(webReq.WebpageContents))
@@ -148,8 +153,16 @@ namespace ArbitraryBot.BackEnd
                 if (Log.Logger != null)
                 {
                     Log.Error(ex, "Failure occured during logging req acquisition: {Error}", ex.Message);
+                    Handler.NotifyError(ex, "Logging");
                 }
             }
+        }
+
+        internal static void ValidateRunningMode()
+        {
+            #if DEBUG
+            Constants.DebugMode = true;
+            #endif
         }
     }
 }

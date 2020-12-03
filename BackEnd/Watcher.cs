@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ArbitraryBot.FrontEnd;
 using ArbitraryBot.Shared;
 using Serilog;
 
@@ -76,6 +77,7 @@ namespace ArbitraryBot.BackEnd
             catch (Exception ex)
             {
                 Log.Error(ex, "Error on tracker: [{Tracker}]{Error}", tracker.FriendlyName, ex.Message);
+                Handler.NotifyError(ex, tracker.FriendlyName);
             }
         }
 

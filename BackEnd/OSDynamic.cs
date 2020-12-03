@@ -21,11 +21,10 @@ namespace ArbitraryBot.BackEnd
                     "LOCALAPPDATA" : "Home");
                 ProductAssembly proAss = GetProductAssembly();
                 basePath = Path.Combine(Path.Combine(userPath, proAss.CompanyName), proAss.ProductName);
-                #if DEBUG
-                basePath = Path.Combine(basePath, "Test");
-                #else
-                basePath = Path.Combine(basePath, "Prod");
-                #endif
+                if (Constants.DebugMode)
+                    basePath = Path.Combine(basePath, "Test");
+                else
+                    basePath = Path.Combine(basePath, "Prod");
             }
             return basePath;
         }
@@ -41,7 +40,7 @@ namespace ArbitraryBot.BackEnd
             };
         }
 
-        internal static Version GetRunningVersion(bool friendly = false)
+        internal static Version GetRunningVersion()
         {
             return Assembly.GetExecutingAssembly().GetName().Version;
         }

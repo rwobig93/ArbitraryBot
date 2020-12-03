@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ArbitraryBot.BackEnd;
 using ArbitraryBot.Extensions;
 using ArbitraryBot.Shared;
@@ -53,6 +54,8 @@ namespace ArbitraryBot.FrontEnd
             Console.Clear();
             Log.Debug("Working on MenuAction: {MenuTitle}", menuTitle);
             string menu = "";
+            if (Constants.Notifications.Count > 0)
+                menu = Constants.Notifications.Last().ConvertToNotification();
             menu = menu.AddSeperatorTilde();
             menu += menuTitle.ConvertToMenuTitle();
             if (!string.IsNullOrWhiteSpace(description))
@@ -82,6 +85,8 @@ namespace ArbitraryBot.FrontEnd
             while (!validAnswer)
             {
                 string menu = "";
+                if (Constants.Notifications.Count > 0)
+                    menu = Constants.Notifications.Last().ConvertToNotification();
                 menu = menu.AddSeperatorTilde();
                 menu += menuTitle.ConvertToMenuTitle();
                 if (displayVersion)
@@ -126,6 +131,21 @@ namespace ArbitraryBot.FrontEnd
             }
             Log.Debug("Valid menu option was entered: {Answer}", intAnswer);
             return intAnswer;
+        }
+
+        internal static void PromptEmailSettings()
+        {
+            Console.WriteLine("**We do NOT log your information and it is encrypted locally on your computer**");
+            if (!PromptYesNo("Would you like to setup email settings to send email alerts?"))
+                return;
+            Constants.Config.SMTPUrl = PromptQuestion("Enter the mail server URL (mail.domain.com)");
+            Constants.Config.SMTPUsername = PromptQuestion("Enter the mail account username");
+            Constants.Config.SMTPPassword = PromptQuestion("Enter the mail account password");
+            Constants.Config.SMTPEmailFrom = PromptQuestion("Enter the email address we're sending from");
+            Constants.Config.SMTPEmailName = PromptQuestion("Enter the name you want shown in the 'From' field (John Doe)");
+            Config.Save();
+            Console.WriteLine("Settings have been saved and these settings are viewable from the settings menu (except for username and password of course");
+            UI.StopForMessage();
         }
 
         internal static int PromptMultipleChoice(string question, string[] choices, bool validate = false)
@@ -188,9 +208,9 @@ namespace ArbitraryBot.FrontEnd
             return retAnswer;
         }
 
-        internal static string PromptQuestion(string question, bool validate = false)
+        internal static string PromptQuestion(string question, bool validate = false, bool sensitive = false)
         {
-            Log.Debug("Asking PromptQuestion: {Question}", question);
+            Log.Debug("Asking PromptQuestion: [{Secure}] {Question}", sensitive, question);
             bool answered = false;
             string answer = "";
             while (!answered)
@@ -203,7 +223,10 @@ namespace ArbitraryBot.FrontEnd
                     var bAnswer = Console.ReadLine().ToLower();
                     if (bAnswer != "y" && bAnswer != "n")
                     {
-                        Log.Debug("Answer was invalid: {Answer}", answer);
+                        if (sensitive)
+                            Log.Debug("Answer was invalid: {Answer}", new string('*', answer.Length));
+                        else
+                            Log.Debug("Answer was invalid: {Answer}", answer);
                         Console.WriteLine("You entered an invalid response, please try again");
                     }
                     else if (bAnswer == "n")
@@ -220,7 +243,10 @@ namespace ArbitraryBot.FrontEnd
                     answered = true;
                 }
             }
-            Log.Information("PromptQuestion answered", answer);
+            if (sensitive)
+                Log.Information("PromptQuestion Answered: {Answer}", new string('*', answer.Length));
+            else
+                Log.Information("PromptQuestion Answered: {Answer}", answer);
             return answer;
         }
         internal static bool PromptYesNo(string question)
