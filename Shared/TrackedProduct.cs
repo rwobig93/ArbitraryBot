@@ -13,7 +13,7 @@ namespace ArbitraryBot.Shared
         public bool AlertOnKeywordNotExist { get; set; } = true;
         public bool Enabled { get; set; } = true;
         public TrackInterval AlertInterval { get; set; }
-        public Alert AlertType { get; set; }
+        public AlertType AlertType { get; set; }
         public List<string> Emails { get; set; }
         public string WebHookURL { get; set; }
         public string MentionString { get; set; }

@@ -98,7 +98,12 @@ namespace ArbitraryBot.FrontEnd
                     else
                     {
                         var version = OSDynamic.GetRunningVersion();
-                        menu += $"v{version.Major}.{version.Minor}.{version.Build} ".ConvertToMenuTitle();
+                        var verString = $"v{version.Major}.{version.Minor}.{version.Build}";
+                        if (!(verString.Length % 2 == 0))
+                        {
+                            verString += " ";
+                        }
+                        menu += verString.ConvertToMenuTitle();
                     }
                 }
                 if (!string.IsNullOrWhiteSpace(description))
@@ -140,9 +145,10 @@ namespace ArbitraryBot.FrontEnd
                 return;
             Constants.Config.SMTPUrl = PromptQuestion("Enter the mail server URL (mail.domain.com)");
             Constants.Config.SMTPUsername = PromptQuestion("Enter the mail account username");
-            Constants.Config.SMTPPassword = PromptQuestion("Enter the mail account password");
+            Constants.Config.SMTPPassword = PromptQuestion("Enter the mail account password", sensitive: true);
             Constants.Config.SMTPEmailFrom = PromptQuestion("Enter the email address we're sending from");
             Constants.Config.SMTPEmailName = PromptQuestion("Enter the name you want shown in the 'From' field (John Doe)");
+            Constants.Config.SMTPPort = PromptQuestionNumber("Enter the SMTP port");
             Config.Save();
             Console.WriteLine("Settings have been saved and these settings are viewable from the settings menu (except for username and password of course");
             UI.StopForMessage();
@@ -216,7 +222,10 @@ namespace ArbitraryBot.FrontEnd
             while (!answered)
             {
                 Console.Write($"{question}: ");
-                answer = Console.ReadLine();
+                if (sensitive)
+                    answer = GetSecureString();
+                else
+                    answer = Console.ReadLine();
                 if (validate)
                 {
                     Console.Write($"You entered: {answer}{Environment.NewLine}Is this correct?  [y/n] ");
@@ -249,6 +258,62 @@ namespace ArbitraryBot.FrontEnd
                 Log.Information("PromptQuestion Answered: {Answer}", answer);
             return answer;
         }
+
+        internal static int PromptQuestionNumber(string question, bool validate = false, bool sensitive = false)
+        {
+            Log.Debug("Asking PromptQuestionNumber: [{Secure}] {Question}", sensitive, question);
+            bool answered = false;
+            string answer = "";
+            int intAnswer = 0;
+            while (!answered)
+            {
+                Console.Write($"{question}: ");
+                if (sensitive)
+                    answer = GetSecureString();
+                else
+                    answer = Console.ReadLine();
+                if (!int.TryParse(answer, out intAnswer))
+                {
+                    Log.Debug("Answer entered was an invalid response: {Answer}", answer);
+                    Console.WriteLine("Answer wasn't invalid, please press enter and try again");
+                    Console.ReadLine();
+                }
+                else
+                {
+                    if (validate)
+                    {
+                        Console.Write($"You entered: {answer}{Environment.NewLine}Is this correct?  [y/n] ");
+                        var bAnswer = Console.ReadLine().ToLower();
+                        if (bAnswer != "y" && bAnswer != "n")
+                        {
+                            if (sensitive)
+                                Log.Debug("Answer was invalid: {Answer}", new string('*', answer.Length));
+                            else
+                                Log.Debug("Answer was invalid: {Answer}", answer);
+                            Console.WriteLine("You entered an invalid response, please try again");
+                        }
+                        else if (bAnswer == "n")
+                        {
+                            Log.Debug("Answer was no, asking again: {Answer}", bAnswer);
+                        }
+                        else
+                        {
+                            answered = true;
+                        }
+                    }
+                    else
+                    {
+                        answered = true;
+                    }
+                }
+            }
+            if (sensitive)
+                Log.Information("PromptQuestionNumber Answered: {Answer}", new string('*', answer.Length));
+            else
+                Log.Information("PromptQuestionNumber Answered: {Answer}", answer);
+            return intAnswer;
+        }
+
         internal static bool PromptYesNo(string question)
         {
             Log.Debug("Asking PromptYesNo: {Question}", question);
@@ -277,6 +342,29 @@ namespace ArbitraryBot.FrontEnd
             {
                 return false;
             }
+        }
+        private static string GetSecureString()
+        {
+            var secString = string.Empty;
+            ConsoleKey key;
+            do
+            {
+                var keyInfo = Console.ReadKey(intercept: true);
+                key = keyInfo.Key;
+
+                if (key == ConsoleKey.Backspace && secString.Length > 0)
+                {
+                    Console.Write("\b \b");
+                    secString = secString[0..^1];
+                }
+                else if (!char.IsControl(keyInfo.KeyChar))
+                {
+                    Console.Write("*");
+                    secString += keyInfo.KeyChar;
+                }
+            } while (key != ConsoleKey.Enter);
+            Console.WriteLine();
+            return secString;
         }
 
         internal static int PromptMenuTrackerProperties(string menuName, string description)
@@ -343,7 +431,7 @@ namespace ArbitraryBot.FrontEnd
                         "Email"
                 });
             tracker.AlertType = Handler.SelectAlertFromChoice(alertAnswer);
-            if (tracker.AlertType == Alert.Webhook)
+            if (tracker.AlertType == AlertType.Webhook)
             {
                 tracker.WebHookURL = Prompts.PromptQuestion("Enter the webhook URL");
                 tracker.MentionString = Prompts.PromptQuestion($"Enter an ID of a user or role you want to mention{Environment.NewLine} (leave blank if you don't want a mention with the alert");
@@ -352,9 +440,10 @@ namespace ArbitraryBot.FrontEnd
             {
                 var emailString = Prompts.PromptQuestion("Enter a comma seperated list of emails to send an alert to");
                 tracker.Emails = new List<string>();
-                foreach (var email in emailString)
+                foreach (var email in emailString.Split(','))
                 {
-                    tracker.Emails.Add(email.ToString().Replace("\"", "").Trim());
+                    // .Replace("\"", "")
+                    tracker.Emails.Add(email.ToString().Trim());
                 }
             }
         }

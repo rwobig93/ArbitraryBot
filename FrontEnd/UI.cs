@@ -369,11 +369,11 @@ namespace ArbitraryBot.FrontEnd
             menu += "Enabled".ConvertToMenuProperty(selectedTracker.Enabled.ToString());
             menu += "AlertInterval".ConvertToMenuProperty(selectedTracker.AlertInterval.ToString());
             menu += "AlertType".ConvertToMenuProperty(selectedTracker.AlertType.ToString());
-            if (selectedTracker.AlertType == Alert.Email)
+            if (selectedTracker.AlertType == AlertType.Email)
             {
                 menu += "Emails".ConvertToMenuProperty(selectedTracker.Emails.ToString());
             }
-            else if (selectedTracker.AlertType == Alert.Webhook)
+            else if (selectedTracker.AlertType == AlertType.Webhook)
             {
                 menu += "WebHookURL".ConvertToMenuProperty(selectedTracker.WebHookURL);
                 menu += "MentionString".ConvertToMenuProperty(selectedTracker.MentionString);
@@ -440,7 +440,6 @@ namespace ArbitraryBot.FrontEnd
             string info = "".AddSeperatorTilde();
             int envLength = 25;
             int setLength = 18;
-            info += "Environment Variables".ConvertToMenuTitle();
             info += "App Version".ConvertToMenuProperty(OSDynamic.GetRunningVersion().ToString(), envLength);
             info += "Hostname".ConvertToMenuProperty(Environment.MachineName, envLength);
             info += "Current OS Platform".ConvertToMenuProperty(OSDynamic.GetCurrentOS().ToString(), envLength);
@@ -450,7 +449,7 @@ namespace ArbitraryBot.FrontEnd
             info += "Current Framework".ConvertToMenuProperty(RuntimeInformation.FrameworkDescription, envLength);
             info += "Logging Path".ConvertToMenuProperty(Constants.PathLogs, envLength);
             info += "Config Path".ConvertToMenuProperty(Constants.PathConfigDefault, envLength);
-            info += "Current Settings".ConvertToMenuTitle();
+            info = info.AddSeperatorDashed();
             info += "Email Name".ConvertToMenuProperty(Constants.Config.SMTPEmailName, setLength);
             info += "Email From Address".ConvertToMenuProperty(Constants.Config.SMTPEmailFrom, setLength);
             info += "Email URL".ConvertToMenuProperty(Constants.Config.SMTPUrl, setLength);

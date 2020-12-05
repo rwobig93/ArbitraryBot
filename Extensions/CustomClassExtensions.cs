@@ -33,7 +33,7 @@ namespace ArbitraryBot.Extensions
             }
             else
             {
-                Constants.SavedData.TrackedProducts1Min.Add(tracker);
+                selectedList.Add(tracker);
                 Log.Debug("Added tracker on the {Interval} queue: {Tracker}", tracker.AlertInterval, tracker.FriendlyName);
             }
         }

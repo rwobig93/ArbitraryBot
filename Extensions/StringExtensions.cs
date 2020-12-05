@@ -53,9 +53,9 @@ namespace ArbitraryBot.Extensions
 
         public static string ConvertToNotification(this string _string)
         {
-            if (_string.Length > 66)
+            if (_string.Length > 65)
             {
-                _string = _string.Substring(0, 66);
+                _string = _string.Substring(0, 65);
             }
             return $"| Notifiy: {_string,-65}|{Environment.NewLine}";
         }

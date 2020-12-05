@@ -67,7 +67,7 @@ namespace ArbitraryBot.Shared
                     configFile = configFile += ".json";
                 }
             }
-            Log.Debug($"configFile = {configFile}");
+            Log.Debug("configFile: {ConfigFile}", configFile);
             if (File.Exists(configFile))
             {
                 Log.Debug("Attempting to save over current config file");
@@ -84,17 +84,18 @@ namespace ArbitraryBot.Shared
 
         private static Config SecureSensitiveProperties(Config config)
         {
-            if (config.KeyA == null || config.KeyB == null || config.KeyC == null)
+            Config finalConfig = (Config)config.MemberwiseClone();
+            if (finalConfig.KeyA == null || finalConfig.KeyB == null || finalConfig.KeyC == null)
             {
-                GenerateKeys();
+                GenerateKeys(finalConfig);
             }
 
-            config.SMTPUsername = AESThenHMAC.SimpleEncrypt(config.SMTPUsername, config.KeyB, config.KeyA, config.KeyC);
-            config.SMTPPassword = AESThenHMAC.SimpleEncrypt(config.SMTPPassword, config.KeyA, config.KeyC, config.KeyB);
-            config.SMTPUrl = AESThenHMAC.SimpleEncrypt(config.SMTPUrl, config.KeyC, config.KeyA, config.KeyB);
-            config.SMTPEmailFrom = AESThenHMAC.SimpleEncrypt(config.SMTPEmailFrom, config.KeyB, config.KeyC, config.KeyA);
-            config.SMTPEmailName = AESThenHMAC.SimpleEncrypt(config.SMTPEmailName, config.KeyC, config.KeyB, config.KeyA);
-            return config;
+            finalConfig.SMTPUsername = string.IsNullOrWhiteSpace(finalConfig.SMTPUsername) ? "" : AESThenHMAC.SimpleEncrypt(finalConfig.SMTPUsername, finalConfig.KeyB, finalConfig.KeyA, finalConfig.KeyC);
+            finalConfig.SMTPPassword = string.IsNullOrWhiteSpace(finalConfig.SMTPPassword) ? "" : AESThenHMAC.SimpleEncrypt(finalConfig.SMTPPassword, finalConfig.KeyA, finalConfig.KeyC, finalConfig.KeyB);
+            finalConfig.SMTPUrl = string.IsNullOrWhiteSpace(finalConfig.SMTPUrl) ? "" : AESThenHMAC.SimpleEncrypt(finalConfig.SMTPUrl, finalConfig.KeyC, finalConfig.KeyA, finalConfig.KeyB);
+            finalConfig.SMTPEmailFrom = string.IsNullOrWhiteSpace(finalConfig.SMTPEmailFrom) ? "" : AESThenHMAC.SimpleEncrypt(finalConfig.SMTPEmailFrom, finalConfig.KeyB, finalConfig.KeyC, finalConfig.KeyA);
+            finalConfig.SMTPEmailName = string.IsNullOrWhiteSpace(finalConfig.SMTPEmailName) ? "" : AESThenHMAC.SimpleEncrypt(finalConfig.SMTPEmailName, finalConfig.KeyC, finalConfig.KeyB, finalConfig.KeyA);
+            return finalConfig;
         }
 
         private static Config UnsecureSensitiveProperties(Config config)
@@ -109,20 +110,20 @@ namespace ArbitraryBot.Shared
                 return null;
             }
 
-            config.SMTPUsername = AESThenHMAC.SimpleDecrypt(config.SMTPUsername, config.KeyB, config.KeyA, config.KeyC.Length);
-            config.SMTPPassword = AESThenHMAC.SimpleDecrypt(config.SMTPPassword, config.KeyA, config.KeyC, config.KeyB.Length);
-            config.SMTPUrl = AESThenHMAC.SimpleDecrypt(config.SMTPUrl, config.KeyC, config.KeyA, config.KeyB.Length);
-            config.SMTPEmailFrom = AESThenHMAC.SimpleDecrypt(config.SMTPEmailFrom, config.KeyB, config.KeyC, config.KeyA.Length);
-            config.SMTPEmailName = AESThenHMAC.SimpleDecrypt(config.SMTPEmailName, config.KeyC, config.KeyB, config.KeyA.Length);
+            config.SMTPUsername = string.IsNullOrWhiteSpace(config.SMTPUsername) ? "" : AESThenHMAC.SimpleDecrypt(config.SMTPUsername, config.KeyB, config.KeyA, config.KeyC.Length);
+            config.SMTPPassword = string.IsNullOrWhiteSpace(config.SMTPPassword) ? "" : AESThenHMAC.SimpleDecrypt(config.SMTPPassword, config.KeyA, config.KeyC, config.KeyB.Length);
+            config.SMTPUrl = string.IsNullOrWhiteSpace(config.SMTPUrl) ? "" : AESThenHMAC.SimpleDecrypt(config.SMTPUrl, config.KeyC, config.KeyA, config.KeyB.Length);
+            config.SMTPEmailFrom = string.IsNullOrWhiteSpace(config.SMTPEmailFrom) ? "" : AESThenHMAC.SimpleDecrypt(config.SMTPEmailFrom, config.KeyB, config.KeyC, config.KeyA.Length);
+            config.SMTPEmailName = string.IsNullOrWhiteSpace(config.SMTPEmailName) ? "" : AESThenHMAC.SimpleDecrypt(config.SMTPEmailName, config.KeyC, config.KeyB, config.KeyA.Length);
             return config;
         }
 
-        private static void GenerateKeys()
+        private static void GenerateKeys(Config config)
         {
             Log.Verbose("Generating new keys for config");
-            Constants.Config.KeyB = AESThenHMAC.NewKey();
-            Constants.Config.KeyA = AESThenHMAC.NewKey();
-            Constants.Config.KeyC = AESThenHMAC.NewKey();
+            config.KeyB = AESThenHMAC.NewKey();
+            config.KeyA = AESThenHMAC.NewKey();
+            config.KeyC = AESThenHMAC.NewKey();
             Log.Information("Generated new keys for config");
         }
 

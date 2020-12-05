@@ -155,8 +155,8 @@ namespace ArbitraryBot.BackEnd
 
         internal static void InitializeApp()
         {
-            HouseKeeping.ValidateAllFilePaths(true);
             HouseKeeping.ValidateRunningMode();
+            HouseKeeping.ValidateAllFilePaths(true);
             HouseKeeping.ValidateLoggingReqs();
         }
 

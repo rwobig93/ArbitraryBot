@@ -83,17 +83,17 @@ namespace ArbitraryBot.BackEnd
 
         public static void ProcessAlertToSend(TrackedProduct tracker)
         {
-            Log.Debug("Processing Alert Type", tracker.AlertType);
+            Log.Debug<Shared.AlertType>("Processing Alert Type", (Shared.AlertType)tracker.AlertType);
             tracker.Triggered = true;
             switch (tracker.AlertType)
             {
-                case Alert.Email:
+                case AlertType.Email:
                     Communication.SendAlertEmail(tracker);
                     break;
-                case Alert.Webhook:
+                case AlertType.Webhook:
                     Communication.SendAlertWebhookDiscord(tracker, _color: "2813191");
                     break;
-                case Alert.Email_Webhook:
+                case AlertType.Email_Webhook:
                     Log.Warning("Processed Alert Type Webhook + Email when it isn't implemented yet", tracker);
                     break;
             }
@@ -101,20 +101,20 @@ namespace ArbitraryBot.BackEnd
 
         public static void ProcessAlertToReset(TrackedProduct tracker)
         {
-            Log.Debug("Processing Alert Type", tracker.AlertType);
+            Log.Debug<Shared.AlertType>("Processing Alert Type", (Shared.AlertType)tracker.AlertType);
             tracker.Triggered = false;
             var msg = $"Alert has cleared for the following page:{Environment.NewLine}{tracker.PageURL}";
             var title = $"Alert has cleared for the {tracker.FriendlyName}, back to waiting :cry:";
             var color = "15730439";
             switch (tracker.AlertType)
             {
-                case Alert.Email:
+                case AlertType.Email:
                     Communication.SendAlertEmail(tracker);
                     break;
-                case Alert.Webhook:
+                case AlertType.Webhook:
                     Communication.SendAlertWebhookDiscord(tracker, title, msg, color);
                     break;
-                case Alert.Email_Webhook:
+                case AlertType.Email_Webhook:
                     Log.Warning("Processed Alert Type Webhook + Email when it isn't implemented yet", tracker);
                     break;
             }
@@ -122,19 +122,19 @@ namespace ArbitraryBot.BackEnd
 
         public static void ProcessAlertToTest(TrackedProduct tracker)
         {
-            Log.Debug("Processing Alert Type For Testing", tracker.AlertType);
+            Log.Debug<Shared.AlertType>("Processing Alert Type For Testing", (Shared.AlertType)tracker.AlertType);
             string title = $"Testing alert on the the {tracker.FriendlyName} tracker, Get Pumped!";
             string msg = $"Testing the tracker for the following page: {Environment.NewLine}{tracker.PageURL}";
             string color = "16445954";
             switch (tracker.AlertType)
             {
-                case Alert.Email:
+                case AlertType.Email:
                     Communication.SendAlertEmail(tracker);
                     break;
-                case Alert.Webhook:
+                case AlertType.Webhook:
                     Communication.SendAlertWebhookDiscord(tracker, title, msg, color);
                     break;
-                case Alert.Email_Webhook:
+                case AlertType.Email_Webhook:
                     Log.Warning("Processed Alert Type Webhook + Email when it isn't implemented yet", tracker);
                     break;
             }

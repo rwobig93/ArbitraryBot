@@ -78,19 +78,19 @@ namespace ArbitraryBot.FrontEnd
             Core.SaveEverything();
         }
 
-        internal static Alert SelectAlertFromChoice(int alertAnswer)
+        internal static AlertType SelectAlertFromChoice(int alertAnswer)
         {
             switch (alertAnswer)
             {
                 case 1:
                     Log.Debug("Set alertType to Webhook", alertAnswer);
-                    return Alert.Webhook;
+                    return AlertType.Webhook;
                 case 2:
                     Log.Debug("Set alertType to Email", alertAnswer);
-                    return Alert.Email;
+                    return AlertType.Email;
                 default:
                     Log.Warning("Default was hit on switch that shouldn't occur", alertAnswer);
-                    return Alert.Email;
+                    return AlertType.Email;
             }
         }
 

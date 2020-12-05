@@ -15,7 +15,7 @@
         SavedData
     }
 
-    public enum Alert
+    public enum AlertType
     {
         Email,
         Webhook,
