@@ -56,7 +56,7 @@ namespace ArbitraryBot.BackEnd
                     {
                         if (!tracker.Triggered)
                         {
-                            Log.Debug("Alerting on tracker as logic matches", tracker, attempt1.KeywordExists);
+                            Log.Information("Alerting on tracker as logic matches", tracker, attempt1.KeywordExists);
                             ProcessAlertToSend(tracker);
                         }
                     }
@@ -64,7 +64,7 @@ namespace ArbitraryBot.BackEnd
                     {
                         if (tracker.Triggered)
                         {
-                            Log.Debug("Alerting on tracker as logic matches", tracker, attempt1.KeywordExists);
+                            Log.Information("Resetting on tracker as logic matches", tracker, attempt1.KeywordExists);
                             ProcessAlertToReset(tracker);
                         }
                     }

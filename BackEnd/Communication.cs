@@ -127,7 +127,6 @@ namespace ArbitraryBot.BackEnd
             response.EnsureSuccessStatusCode();
             var contents = await response.Content.ReadAsStringAsync();
             Log.Verbose("Webpage Contents:   {WebpageContents}", contents);
-            Log.Information(contents);
             if (string.IsNullOrWhiteSpace(contents))
             {
                 return null;
