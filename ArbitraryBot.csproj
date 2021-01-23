@@ -18,11 +18,11 @@
   </PropertyGroup>
 
   <Target Name="Wobigtech_Deploy_Stable" AfterTargets="_CopyResolvedFilesToPublishPreserveNewest" Condition="'$(Configuration)'=='Stable'">
-    <Exec Command="C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe -command C:\.scripts\Publish_Deploy_Wobigtech.ps1" />
+    <Exec Command="C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe -command C:\Users\Rick\.repos\.dev-scripts\Publish_Deploy_Wobigtech.ps1" />
   </Target>
 
   <Target Name="Wobigtech_Deploy_Beta" AfterTargets="_CopyResolvedFilesToPublishPreserveNewest" Condition="'$(Configuration)'=='Beta'">
-    <Exec Command="C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe -command C:\.scripts\Publish_Deploy_Wobigtech.ps1 -BetaRelease" />
+    <Exec Command="C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe -command C:\Users\Rick\.repos\.dev-scripts\Publish_Deploy_Wobigtech.ps1 -BetaRelease" />
   </Target>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -48,6 +48,12 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="4.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="WTUpdate">
+      <HintPath>..\Wobigtech.Upstaller\WTUpdate\bin\Debug\net5.0\WTUpdate.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

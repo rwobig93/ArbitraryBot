@@ -76,8 +76,21 @@ namespace ArbitraryBot.BackEnd
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error on tracker: [{Tracker}]{Error}", tracker.FriendlyName, ex.Message);
+                Log.Error("Error on tracker: [{Tracker}]{Error}", tracker.FriendlyName, ex.Message);
                 Handler.NotifyError(ex, tracker.FriendlyName);
+            }
+        }
+
+        internal static void CheckForUpdates()
+        {
+            try
+            {
+                var updateChecked = WTUpdate.Updater.CheckForUpdate(OSDynamic.GetProductAssembly().ProductName);
+                Log.Information("App update check success: {UpdateChecked}", updateChecked);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Error occured checking for updates");
             }
         }
 

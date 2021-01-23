@@ -55,6 +55,7 @@ namespace ArbitraryBot.BackEnd
             {
                 StartJobDataSaver();
                 StartJobCleanup();
+                StartJobCheckForUpdates();
                 StartJobWatcherOneMin();
                 StartJobWatcherFiveMin();
                 return StatusReturn.Success;
@@ -64,6 +65,11 @@ namespace ArbitraryBot.BackEnd
                 Log.Fatal(ex, "Failed to start all timed jobs");
                 return StatusReturn.Failure;
             }
+        }
+
+        private static void StartJobCheckForUpdates()
+        {
+            RecurringJob.AddOrUpdate("Update_Checker", () => Watcher.CheckForUpdates(), CronString.Hourly);
         }
 
         public static void StartJobWatcherFiveMin()
