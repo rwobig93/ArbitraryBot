@@ -26,12 +26,13 @@ namespace ArbitraryBot.BackEnd
                   levelSwitch: Constants.LogLevelLocal))
                 .WriteTo.Async(c => c.Seq("http://dev.wobigtech.net:5341", apiKey: Constants.LogUri, controlLevelSwitch: Constants.LogLevelCloud))
                 .Enrich.WithCaller()
-                .Enrich.WithThreadId()
                 .Enrich.WithThreadName()
                 .Enrich.FromLogContext()
                 .Enrich.WithMachineName()
                 .Enrich.WithEnvironmentUserName()
                 .Enrich.WithProperty("Application", OSDynamic.GetProductAssembly().ProductName)
+                .Enrich.WithProperty("SessionID", Guid.NewGuid())
+                .Enrich.WithProperty("AppVersion", OSDynamic.GetProductAssembly().AppVersion)
                 .CreateLogger();
 
             ChangeLoggingLevelLocal();

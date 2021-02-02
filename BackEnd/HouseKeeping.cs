@@ -4,7 +4,6 @@ using Serilog;
 using ArbitraryBot.Shared;
 using System.IO;
 using Nito.AsyncEx.Synchronous;
-using System.Reflection;
 using ArbitraryBot.FrontEnd;
 
 namespace ArbitraryBot.BackEnd

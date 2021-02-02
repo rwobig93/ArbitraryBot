@@ -20,7 +20,6 @@ namespace ArbitraryBot.BackEnd
                 }
                 else
                 {
-                    GlobalConfiguration.Configuration.UseSerilogLogProvider();
                     GlobalConfiguration.Configuration.UseMemoryStorage();
                     BackgroundJobServer = new BackgroundJobServer();
                 }

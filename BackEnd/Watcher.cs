@@ -56,7 +56,7 @@ namespace ArbitraryBot.BackEnd
                     {
                         if (!tracker.Triggered)
                         {
-                            Log.Information("Alerting on tracker as logic matches", tracker, attempt1.KeywordExists);
+                            Log.Verbose("Alerting on tracker as logic matches", tracker, attempt1.KeywordExists);
                             ProcessAlertToSend(tracker);
                         }
                     }
@@ -64,7 +64,7 @@ namespace ArbitraryBot.BackEnd
                     {
                         if (tracker.Triggered)
                         {
-                            Log.Information("Resetting on tracker as logic matches", tracker, attempt1.KeywordExists);
+                            Log.Verbose("Resetting on tracker as logic matches", tracker, attempt1.KeywordExists);
                             ProcessAlertToReset(tracker);
                         }
                     }
@@ -81,12 +81,12 @@ namespace ArbitraryBot.BackEnd
             }
         }
 
-        internal static void CheckForUpdates()
+        public static void CheckForUpdates()
         {
             try
             {
                 var updateChecked = WTUpdate.Updater.CheckForUpdate(OSDynamic.GetProductAssembly().ProductName);
-                Log.Information("App update check success: {UpdateChecked}", updateChecked);
+                Log.Verbose("App update check success: {UpdateChecked}", updateChecked);
             }
             catch (Exception ex)
             {
@@ -96,7 +96,7 @@ namespace ArbitraryBot.BackEnd
 
         public static void ProcessAlertToSend(TrackedProduct tracker)
         {
-            Log.Debug<Shared.AlertType>("Processing Alert Type", (Shared.AlertType)tracker.AlertType);
+            Log.Debug("Processing Alert Type", tracker.AlertType);
             tracker.Triggered = true;
             switch (tracker.AlertType)
             {
@@ -114,7 +114,7 @@ namespace ArbitraryBot.BackEnd
 
         public static void ProcessAlertToReset(TrackedProduct tracker)
         {
-            Log.Debug<Shared.AlertType>("Processing Alert Type", (Shared.AlertType)tracker.AlertType);
+            Log.Debug("Processing Alert Type", tracker.AlertType);
             tracker.Triggered = false;
             var msg = $"Alert has cleared for the following page:{Environment.NewLine}{tracker.PageURL}";
             var title = $"Alert has cleared for the {tracker.FriendlyName}, back to waiting :cry:";
@@ -135,7 +135,7 @@ namespace ArbitraryBot.BackEnd
 
         public static void ProcessAlertToTest(TrackedProduct tracker)
         {
-            Log.Debug<Shared.AlertType>("Processing Alert Type For Testing", (Shared.AlertType)tracker.AlertType);
+            Log.Debug("Processing Alert Type For Testing", tracker.AlertType);
             string title = $"Testing alert on the the {tracker.FriendlyName} tracker, Get Pumped!";
             string msg = $"Testing the tracker for the following page: {Environment.NewLine}{tracker.PageURL}";
             string color = "16445954";

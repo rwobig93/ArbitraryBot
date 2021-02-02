@@ -29,14 +29,33 @@ namespace ArbitraryBot.BackEnd
             return basePath;
         }
 
-        internal static ProductAssembly GetProductAssembly()
+        internal static ProductAssembly GetProductAssembly(string assemblyPath = null)
         {
-            var assy = Assembly.GetExecutingAssembly();
+            Assembly assy;
+            Version version;
+            string companyName = "Wobigtech";
+            string productName;
+            bool isBeta;
+            if (assemblyPath == null)
+            {
+                assy = Assembly.GetExecutingAssembly();
+                companyName = assy.GetCustomAttributes<AssemblyCompanyAttribute>().FirstOrDefault().Company;
+                productName = assy.GetCustomAttribute<AssemblyProductAttribute>().Product;
+                version = assy.GetName().Version;
+                isBeta = AppContext.BaseDirectory.ToLower().Contains("beta");
+            }
+            else
+            {
+                productName = new FileInfo(assemblyPath).Name.Replace(".exe", "");
+                version = new Version(FileVersionInfo.GetVersionInfo(assemblyPath).FileVersion);
+                isBeta = assemblyPath.ToLower().Contains("beta");
+            }
             return new ProductAssembly
             {
-                CompanyName = assy.GetCustomAttributes<AssemblyCompanyAttribute>()
-                  .FirstOrDefault().Company,
-                ProductName = assy.GetCustomAttribute<AssemblyProductAttribute>().Product
+                CompanyName = string.IsNullOrWhiteSpace(companyName) ? "Unknown" : companyName,
+                ProductName = string.IsNullOrWhiteSpace(productName) ? "Unknown" : productName,
+                AppVersion = version ?? new Version("0.0.0.0"),
+                IsBeta = isBeta
             };
         }
 
