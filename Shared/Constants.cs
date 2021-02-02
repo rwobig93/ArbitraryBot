@@ -22,6 +22,7 @@ namespace ArbitraryBot.Shared
         // Bools
         public static bool CloseApp { get; set; } = false;
         public static bool DebugMode { get; set; } = false;
+        public static bool BetaMode { get; set; } = false;
         public static bool UpdateReady { get; set; } = false;
     }
 }

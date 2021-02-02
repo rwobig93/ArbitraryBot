@@ -162,6 +162,9 @@ namespace ArbitraryBot.BackEnd
             #if DEBUG
             Constants.DebugMode = true;
             #endif
+            #if BETA
+            Constants.BetaMode = true;
+            #endif
         }
     }
 }
