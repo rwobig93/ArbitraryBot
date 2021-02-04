@@ -79,7 +79,7 @@ namespace ArbitraryBot.Shared
                     Log.Debug("Attempting to save a new save data file");
                 }
                 File.WriteAllText(saveFile, JsonConvert.SerializeObject(Constants.SavedData));
-                Log.Information("Successfully serialized savedData file");
+                Log.Debug("Successfully serialized savedData file");
                 return StatusReturn.Success;
             }
             catch (Exception ex)

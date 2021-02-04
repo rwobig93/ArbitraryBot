@@ -78,7 +78,7 @@ namespace ArbitraryBot.Shared
             }
             Config finalConfig = SecureSensitiveProperties(Constants.Config);
             File.WriteAllText(configFile, JsonConvert.SerializeObject(finalConfig));
-            Log.Information("Successfully serialized config file");
+            Log.Debug("Successfully serialized config file");
             return StatusReturn.Success;
         }
 
