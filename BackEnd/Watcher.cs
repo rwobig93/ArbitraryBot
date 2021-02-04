@@ -86,7 +86,7 @@ namespace ArbitraryBot.BackEnd
             try
             {
                 var updateChecked = WTUpdate.Updater.CheckForUpdate(OSDynamic.GetProductAssembly().ProductName);
-                Log.Verbose("App update check success: {UpdateChecked}", updateChecked);
+                Log.Debug("App update check success: {UpdateChecked}", updateChecked);
             }
             catch (Exception ex)
             {

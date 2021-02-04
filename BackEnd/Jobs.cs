@@ -21,7 +21,6 @@ namespace ArbitraryBot.BackEnd
                 else
                 {
                     GlobalConfiguration.Configuration.UseMemoryStorage();
-                    GlobalConfiguration.Configuration.UseSerilogLogProvider();
                     BackgroundJobServer = new BackgroundJobServer();
                 }
                 return StatusReturn.Success;
@@ -69,7 +68,7 @@ namespace ArbitraryBot.BackEnd
 
         private static void StartJobCheckForUpdates()
         {
-            RecurringJob.AddOrUpdate("Update_Checker", () => Watcher.CheckForUpdates(), CronString.Hourly);
+            RecurringJob.AddOrUpdate("Update_Checker", () => Watcher.CheckForUpdates(), CronString.Minutely);
         }
 
         public static void StartJobWatcherFiveMin()

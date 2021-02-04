@@ -25,7 +25,6 @@ namespace ArbitraryBot.BackEnd
                   outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
                   levelSwitch: Constants.LogLevelLocal))
                 .WriteTo.Async(c => c.Seq("http://dev.wobigtech.net:5341", apiKey: Constants.LogUri, controlLevelSwitch: Constants.LogLevelCloud))
-                .MinimumLevel.Override("Hangfire", LogEventLevel.Warning)
                 .Enrich.WithCaller()
                 .Enrich.WithThreadName()
                 .Enrich.FromLogContext()
