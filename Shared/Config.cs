@@ -31,7 +31,7 @@ namespace ArbitraryBot.Shared
                 Log.Debug("Attempting to load config file");
                 var configLoaded = File.ReadAllText(configFile);
                 Constants.Config = UnsecureSensitiveProperties(JsonConvert.DeserializeObject<Config>(configLoaded));
-                Log.Information("Successfully deserialized config file");
+                Log.Debug("Successfully deserialized config file");
                 return StatusReturn.Success;
             }
             else

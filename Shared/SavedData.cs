@@ -25,7 +25,7 @@ namespace ArbitraryBot.Shared
                     Log.Debug("Attempting to load savedData file");
                     var saveDataLoaded = File.ReadAllText(saveFile);
                     Constants.SavedData = JsonConvert.DeserializeObject<SavedData>(saveDataLoaded);
-                    Log.Information("Successfully deserialized savedData file");
+                    Log.Debug("Successfully deserialized savedData file");
                     return StatusReturn.Success;
                 }
                 else
@@ -121,7 +121,7 @@ namespace ArbitraryBot.Shared
                     Remove();
                 }
                 Constants.SavedData = new SavedData();
-                Log.Information("Created new SaveData");
+                Log.Debug("Created new SaveData");
             }
             catch (Exception ex)
             {
