@@ -4,6 +4,7 @@ using System.Linq;
 using ArbitraryBot.BackEnd;
 using ArbitraryBot.Extensions;
 using ArbitraryBot.Shared;
+using ArbitraryBot.Dto;
 using Serilog;
 
 namespace ArbitraryBot.FrontEnd

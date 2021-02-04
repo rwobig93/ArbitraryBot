@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace ArbitraryBot.Shared
+namespace ArbitraryBot.Dto
 {
     public class WebCheck
     {

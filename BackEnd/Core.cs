@@ -5,6 +5,7 @@ using ArbitraryBot.Shared;
 using ArbitraryBot.Extensions;
 using System.Runtime.InteropServices;
 using ArbitraryBot.FrontEnd;
+using ArbitraryBot.Dto;
 
 namespace ArbitraryBot.BackEnd
 {

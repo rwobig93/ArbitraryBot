@@ -5,6 +5,7 @@ using ArbitraryBot.Shared;
 using System.IO;
 using Nito.AsyncEx.Synchronous;
 using ArbitraryBot.FrontEnd;
+using ArbitraryBot.Dto;
 
 namespace ArbitraryBot.BackEnd
 {

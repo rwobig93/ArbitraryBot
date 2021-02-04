@@ -1,6 +1,7 @@
 ﻿using ArbitraryBot.BackEnd;
+using ArbitraryBot.Shared;
 
-namespace ArbitraryBot.Shared
+namespace ArbitraryBot.Dto
 {
     public class FileType
     {

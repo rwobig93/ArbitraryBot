@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ArbitraryBot.Shared;
+using ArbitraryBot.Dto;
 using Serilog;
 
 namespace ArbitraryBot.Extensions

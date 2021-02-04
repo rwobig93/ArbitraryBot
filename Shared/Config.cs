@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using ArbitraryBot.BackEnd;
 using System.Runtime.InteropServices;
 using ArbitraryBot.FrontEnd;
+using ArbitraryBot.Dto;
 
 namespace ArbitraryBot.Shared
 {

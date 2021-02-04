@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ArbitraryBot.Shared
+namespace ArbitraryBot.Dto
 {
     public class ProductAssembly
     {

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using ArbitraryBot.BackEnd;
+using ArbitraryBot.Dto;
 using Newtonsoft.Json;
 using Serilog;
 

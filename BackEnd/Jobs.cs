@@ -1,6 +1,6 @@
 ﻿using System;
 using ArbitraryBot.Extensions;
-using ArbitraryBot.Shared;
+using ArbitraryBot.Dto;
 using Hangfire;
 using Hangfire.MemoryStorage;
 using Serilog;
@@ -68,7 +68,7 @@ namespace ArbitraryBot.BackEnd
 
         private static void StartJobCheckForUpdates()
         {
-            RecurringJob.AddOrUpdate("Update_Checker", () => Watcher.CheckForUpdates(), CronString.Minutely);
+            RecurringJob.AddOrUpdate("Update_Checker", () => Watcher.CheckForUpdates(), CronString.Hourly);
         }
 
         public static void StartJobWatcherFiveMin()

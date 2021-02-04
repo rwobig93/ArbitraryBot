@@ -1,4 +1,4 @@
-﻿namespace ArbitraryBot.Shared
+﻿namespace ArbitraryBot.Dto
 {
     public enum StatusReturn
     {

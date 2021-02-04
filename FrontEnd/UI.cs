@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using ArbitraryBot.BackEnd;
 using ArbitraryBot.Shared;
+using ArbitraryBot.Dto;
 using Serilog;
 using Nito.AsyncEx.Synchronous;
 using ArbitraryBot.Extensions;
@@ -405,7 +406,7 @@ namespace ArbitraryBot.FrontEnd
                 Log.Information("Created new tracker! {Tracker}", newTracker);
                 Console.Write($"Successfully created tracker! {Environment.NewLine}URL: {newTracker.PageURL}");
                 menuClose = true;
-                UI.StopForMessage();
+                StopForMessage();
                 Console.Clear();
             }
             Log.Information("Exited Menu AddWatcher");

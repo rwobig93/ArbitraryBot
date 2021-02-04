@@ -1,6 +1,6 @@
 ﻿using ArbitraryBot.FrontEnd;
 using ArbitraryBot.BackEnd;
-using ArbitraryBot.Shared;
+using ArbitraryBot.Dto;
 
 namespace ArbitraryBot
 {

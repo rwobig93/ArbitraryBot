@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ArbitraryBot.Shared
+namespace ArbitraryBot.Dto
 {
     public class TrackedProduct
     {
